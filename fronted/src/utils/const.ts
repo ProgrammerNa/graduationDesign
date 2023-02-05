@@ -1,0 +1,1 @@
+export const DEFAULT_LOCAL_STORAGE_KEY_PREFIX = '__storage.graducationDesign.'; // localStorage存储前缀
