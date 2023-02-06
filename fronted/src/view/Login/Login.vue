@@ -1,12 +1,18 @@
 <script setup lang="ts">
     import {ref, reactive} from 'vue';
     import {userLogin} from "../../api/loginApi";
+    import pinia from '../../plugins/pinia'
+    import {useSystemStore} from "../../store/system";
+    import {useUserStore} from "../../store/user";
     import router from "../../router/index";
+    import {getMenuLsit} from "../../api/menu";
 
+    const roleId = ref(0)
     const formData = reactive({
         username: '',
         password: ''
     })
+    const menuList = ref(<any>[]);
     const rules = reactive({
         username: [
             {required: true, message: '请输入用户名', trigger: 'blur'},
@@ -31,11 +37,14 @@
                     if (res.status === 200) {
                         console.log(res.data.length)
                         if (formData.username === res.data[0].username && formData.password === res.data[0].password) {
+                            roleId.value = res.data[0].role_id
+                            useUserStore(pinia).setUserInfo(res.data[0])
                             // @ts-ignore
                             ElMessage({
                                 message: '登录成功',
                                 type: 'success',
                             })
+                            getMenu()
                             router.push('/main')
                         }
                     }
@@ -49,6 +58,42 @@
             } else {
                 console.log(valid)
                 return false
+            }
+        })
+    }
+    const getMenu = () => {
+        getMenuLsit({
+            roleId: roleId.value
+        }).then(res => {
+            if (res.status === 200) {
+                if (roleId.value === 1) {
+                    menuList.value.push(
+                        {
+                            menu: '系统管理',
+                            children: true,
+                            path: '/system',
+                            childrenMenu: [
+                                {
+                                    menu: '用户管理',
+                                    path: '/userMangement',
+                                }, {
+                                    menu: '角色管理',
+                                    path: '/roleMangement',
+                                }
+                            ]
+
+                        })
+                } else {
+                    res.data.forEach((val) => {
+                        menuList.value.push({
+                            menu: val.menu,
+                            children: false,
+                            path: val.path
+                        })
+                    })
+                }
+                console.log(menuList.value)
+                useSystemStore(pinia).setRoleMenuList(menuList.value)
             }
         })
     }
