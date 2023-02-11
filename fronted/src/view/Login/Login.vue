@@ -66,34 +66,40 @@
             roleId: roleId.value
         }).then(res => {
             if (res.status === 200) {
-                if (roleId.value === 1) {
-                    menuList.value.push(
-                        {
-                            menu: '系统管理',
-                            children: true,
-                            path: '/system',
-                            childrenMenu: [
-                                {
-                                    menu: '用户管理',
-                                    path: '/userMangement',
-                                }, {
-                                    menu: '角色管理',
-                                    path: '/roleMangement',
-                                }
-                            ]
-
+                const menuPath = ref([])
+                const children = ref([])
+                res.data.forEach((val, index) => {
+                    if (val.flag === 1) {
+                        //    说明有子菜单
+                        if (val.id !== res.data[index - 1].parent_id && index > 0) {
+                            //当再次循环parent_id与菜单id不同时清除子菜单存储数据
+                            children.value = []
+                        }
+                        val.menu_path.split(',').forEach((item) => {
+                            children.value.push({
+                                menu: item.split('/')[0],
+                                path: '/' + item.split('/')[1]
+                            })
                         })
-                } else {
-                    res.data.forEach((val) => {
-                        menuList.value.push({
+                        menuPath.value.push({
+                            menu: val.menu,
+                            children: true,
+                            path: val.path,
+                            childrenMenu: children.value
+                        })
+
+                    } else {
+                        //无子菜单的情况
+                        menuPath.value.push({
                             menu: val.menu,
                             children: false,
-                            path: val.path
+                            path: val.path,
                         })
-                    })
-                }
-                console.log(menuList.value)
-                useSystemStore(pinia).setRoleMenuList(menuList.value)
+                    }
+                })
+                console.log(menuPath.value)
+
+                useSystemStore(pinia).setRoleMenuList(menuPath.value)
             }
         })
     }

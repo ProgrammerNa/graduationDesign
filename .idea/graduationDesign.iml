@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/backend/model" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/backend/blueprint" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/backend/utils" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/fronted/src/view/example" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
