@@ -7,7 +7,6 @@
 <template>
    <div class="sild-menu">
         <el-menu
-            default-active="1"
             class="el-menu-vertical-demo"
             text-color="#8090A6"
             active-text-color=" #f3f6f8"
@@ -53,7 +52,7 @@
 }
 .el-menu {
     .el-menu-item {
-        background-color: #f3f6f8;
+        background-color: #ffffff;
     }
     .el-menu-item {
         &.is-active,

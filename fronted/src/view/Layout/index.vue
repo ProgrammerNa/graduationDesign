@@ -41,7 +41,7 @@ import { RouterView } from 'vue-router';
     .layout-main {
         background-color: #eef2f5;
         overflow-y: auto;
-        height: calc(100vh - 122px);
+        height: calc(100vh - 60px);
     }
 }
 </style>

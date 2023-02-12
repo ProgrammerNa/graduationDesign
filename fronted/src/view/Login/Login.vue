@@ -36,16 +36,24 @@
                 }).then((res) => {
                     if (res.status === 200) {
                         console.log(res.data.length)
-                        if (formData.username === res.data[0].username && formData.password === res.data[0].password) {
-                            roleId.value = res.data[0].role_id
-                            useUserStore(pinia).setUserInfo(res.data[0])
+                        if (res.data[0].flag === 0) {
                             // @ts-ignore
                             ElMessage({
-                                message: '登录成功',
-                                type: 'success',
+                                message: '账号已被禁用，联系管理员进行处理',
+                                type: 'warning',
                             })
-                            getMenu()
-                            router.push('/main')
+                        } else {
+                            if (formData.username === res.data[0].username && formData.password === res.data[0].password) {
+                                roleId.value = res.data[0].role_id
+                                useUserStore(pinia).setUserInfo(res.data[0])
+                                // @ts-ignore
+                                ElMessage({
+                                    message: '登录成功',
+                                    type: 'success',
+                                })
+                                getMenu()
+                                router.push('/main')
+                            }
                         }
                     }
                 }).catch((err) => {
@@ -68,35 +76,61 @@
             if (res.status === 200) {
                 const menuPath = ref([])
                 const children = ref([])
-                res.data.forEach((val, index) => {
-                    if (val.flag === 1) {
-                        //    说明有子菜单
-                        if (val.id !== res.data[index - 1].parent_id && index > 0) {
-                            //当再次循环parent_id与菜单id不同时清除子菜单存储数据
+                if (res.data.length > 1) {
+                    res.data.forEach((val, index) => {
+                        if (val.flag === 1) {
+                            //    说明有子菜单
                             children.value = []
-                        }
-                        val.menu_path.split(',').forEach((item) => {
-                            children.value.push({
-                                menu: item.split('/')[0],
-                                path: '/' + item.split('/')[1]
+                            val.menu_path.split(',').forEach((item) => {
+                                children.value.push({
+                                    menu: item.split('/')[0],
+                                    path: '/' + item.split('/')[1]
+                                })
                             })
-                        })
-                        menuPath.value.push({
-                            menu: val.menu,
-                            children: true,
-                            path: val.path,
-                            childrenMenu: children.value
-                        })
+                            menuPath.value.push({
+                                menu: val.menu,
+                                children: true,
+                                path: val.path,
+                                childrenMenu: children.value
+                            })
 
-                    } else {
-                        //无子菜单的情况
-                        menuPath.value.push({
-                            menu: val.menu,
-                            children: false,
-                            path: val.path,
-                        })
-                    }
-                })
+                        } else {
+                            //无子菜单的情况
+                            menuPath.value.push({
+                                menu: val.menu,
+                                children: false,
+                                path: val.path,
+                            })
+                        }
+                    })
+                } else {
+
+                    res.data.forEach((val, index) => {
+                        if (val.flag === 1) {
+                            //    说明有子菜单
+                            val.menu_path.split(',').forEach((item) => {
+                                children.value.push({
+                                    menu: item.split('/')[0],
+                                    path: '/' + item.split('/')[1]
+                                })
+                            })
+                            menuPath.value.push({
+                                menu: val.menu,
+                                children: true,
+                                path: val.path,
+                                childrenMenu: children.value
+                            })
+
+                        } else {
+                            //无子菜单的情况
+                            menuPath.value.push({
+                                menu: val.menu,
+                                children: false,
+                                path: val.path,
+                            })
+                        }
+                    })
+                }
                 console.log(menuPath.value)
 
                 useSystemStore(pinia).setRoleMenuList(menuPath.value)
