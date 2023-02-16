@@ -12,3 +12,12 @@ class change_json:
         #  转化为json
         res = [dict(zip(data_dict, i)) for i in obj]
         return res
+
+    @staticmethod
+    def dict_slice_data(data,start,end):
+        '''分页切片'''
+        key=data.keys()
+        dict_slice = {}
+        for k in list(key)[start:end]:
+            dict_slice[k] = data[k]
+        return dict_slice
