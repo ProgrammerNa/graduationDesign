@@ -11,7 +11,7 @@ login_blueprint = Blueprint('login',__name__,url_prefix='/userlogin')
 def loginUser():
     data = request.get_json(silent=True)
     print( data['username'])
-    sql=" select * from user u INNER JOIN (select * from role r INNER JOIN (select * FROM userRole) ur ON ur.role_id=r.id) r1 on u.id = r1.user_id where username = %s and password = %s"
+    sql="select * from store st right JOIN(select * FROM(select * from user u INNER JOIN  (select role,user_id,role_id from (select * from role r INNER JOIN (select * FROM userRole) ur ON ur.role_id=r.id) as r1) rr  on u.id = rr.user_id) as t1) t2 on t2.store = st.store_id where username = %s and password = %s"
     # 执行sql语句
     cursor.execute(sql, (data['username'], data['password']))
     result = cursor.fetchall()

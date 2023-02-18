@@ -2,16 +2,18 @@ from flask import Flask
 from test import test_t
 from userLogin import login_blueprint
 from menu import menu_blueprint
-from user import  user_blueprint
+from store import  store_blueprint
 from system import sys_blueprint
+from staff import staff_blueprint
 
 app = Flask(__name__)
 # 注册蓝图
 app.register_blueprint(test_t)
 app.register_blueprint(login_blueprint)
 app.register_blueprint(menu_blueprint)
-app.register_blueprint(user_blueprint)
+app.register_blueprint(store_blueprint)
 app.register_blueprint(sys_blueprint)
+app.register_blueprint(staff_blueprint)
 @app.route('/')
 def hello_world():
     return 'json'

@@ -3,38 +3,38 @@
     import {ref, onMounted, defineExpose} from 'vue'
     import {useUserStore} from "../../store/user";
     import pinia from "../../plugins/pinia";
-    import {getUserDetailByUserId} from '../../api/systemApi'
-    import userDetail from './detail.vue'
+    import {resetUserPassword} from '../../api/systemApi'
+    import addVue from './add.vue'
 
-    const tableData = ref<any[]>([])
-    const searchValue = ref<any>('')
-    const currentId = ref(useUserStore(pinia).userInfo)
-    const userDiaglos = ref()
-    const currentPage = ref(1)
-    const pageSize = ref(5)
-    const total = ref(0)
-    const loading = ref(false)
-    const btnLoading = ref(false)
+    const tableData = ref<any[]>([]);
+    const searchValue = ref<any>('');
+    const currentId = ref(useUserStore(pinia).userInfo);
+    const userDiaglos = ref();
+    const currentPage = ref(1);
+    const pageSize = ref(5);
+    const total = ref(0);
+    const loading = ref(false);
+    const btnLoading = ref(false);
     const handleSizeChange = (val: any) => {
         pageSize.value = val
-        currentPage.value = val = 1
+        currentPage.value = val = 1;
         getListUser()
     }
     const handleCurrentChange = (val: any) => {
-        currentPage.value = val
+        currentPage.value = val;
         getListUser()
     }
     const search = () => {
-        getListUser()
+        getListUser();
         console.log(searchValue.value)
     }
     const reset = () => {
-        searchValue.value = ''
-        getListUser()
+        searchValue.value = '';
+        getListUser();
         console.log(searchValue.value)
     }
     const getListUser = () => {
-        tableData.value = []
+        tableData.value = [];
         getUserList({
             pageSize: pageSize.value,
             currentPage: currentPage.value,
@@ -49,6 +49,7 @@
                             show: true,
                             username: val.username,
                             roleName: val.role,
+                            storeName: val.store_name
                         })
                     } else {
                         tableData.value.push({
@@ -56,6 +57,7 @@
                             show: false,
                             username: val.username,
                             roleName: val.role,
+                            storeName: val.store_name
                         })
                     }
                 })
@@ -86,6 +88,9 @@
                     message: '禁用失败',
                     type: 'error',
                 })
+                setTimeout(() => {
+                    loading.value = false
+                }, 2000)
             })
         } else {
             changeUserActivate({
@@ -109,7 +114,7 @@
                     type: 'error',
                 })
                 setTimeout(() => {
-                    btnLoading.value = false
+                    loading.value = false
                 }, 2000)
             })
         }
@@ -129,7 +134,7 @@
     const confirm = () => {
         centerDialogVisible.value = false
         btnLoading.value = true
-        getUserDetailByUserId({
+        resetUserPassword({
             id: rowInfo.value.id
         }).then((res) => {
             if (res.status === 200) {
@@ -152,6 +157,10 @@
                 btnLoading.value = false
             }, 2000)
         })
+    }
+    const add = ref()
+    const addUser = () => {
+        add.value.open()
     }
     onMounted(() => {
         getListUser()
@@ -177,6 +186,17 @@
             </div>
         </div>
         <div class="user-table">
+            <div class="user-table-head">
+                <div class="user-table-title">
+                    <div class="table-border"></div>
+                    <div class="table-title">
+                        用户列表
+                    </div>
+                </div>
+                <div class="add-btn">
+                    <el-button type="danger" @click="addUser">新增用户</el-button>
+                </div>
+            </div>
             <el-table :data="tableData" style="width: 100%" stripe border max-height="650px"
                       :header-cell-style="{
         'background': 'rgb(250,250,250)',
@@ -197,6 +217,7 @@
                         />
                     </template>
                 </el-table-column>
+                <el-table-column prop="storeName" label="店面名称" align="center"></el-table-column>
                 <el-table-column prop="option" label="操作" align="center">
                     <template #default="scope">
                         <el-button @click="restPassword(scope.row)" :disabled="currentId.id === scope.row.id?true:false"
@@ -229,6 +250,7 @@
                 </span>
             </template>
         </el-dialog>
+        <addVue ref="add"></addVue>
     </div>
 </template>
 
@@ -239,7 +261,6 @@
         background-color: white;
         display: flex;
         align-items: center;
-        justify-items: center;
         border: 1px solid #eaeaea;
         border-radius: 5px;
 
@@ -268,6 +289,37 @@
         margin-top: 20px;
         background-color: white;
         height: calc(100vh - 210px);
+
+        .user-table-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            .add-btn {
+                margin-right: 10px;
+            }
+
+            .user-table-title {
+                display: flex;
+                align-items: center;
+
+                .table-border {
+                    border: 2px solid #d1d1d1;
+                    height: 25px;
+                    margin-left: 10px;
+                    margin-right: 5px;
+                }
+
+                .table-title {
+                    height: 50px;
+                    margin-left: 5px;
+                    font-size: 25px;
+                    line-height: 50px;
+                }
+
+            }
+        }
+
 
         .el-pagination {
             margin-top: 20px;

@@ -8,6 +8,13 @@ export const changeUserActivate = (data: any) => {
     return post('/system/changeUserActivate', data)
 }
 
-export const getUserDetailByUserId = (data:any) => {
-    return post('/system/getUserDetailByUserId', data)
+export const resetUserPassword = (data:any) => {
+    return post('/system/resetUserPassword', data)
+}
+export const getRoleList = (data:any) => {
+    return post('/system/getRoleList',data)
+}
+//获取角色名称
+export const getRoleName = () => {
+    return get('/system/role')
 }
