@@ -67,6 +67,14 @@
             </div>
         </div>
         <div class="user-table">
+            <div class="user-table-head">
+                <div class="user-table-title">
+                    <div class="table-border"></div>
+                    <div class="table-title">
+                        角色列表
+                    </div>
+                </div>
+            </div>
             <el-table :data="tableData" style="width: 100%" stripe border max-height="650px"
                       :header-cell-style="{
         'background': 'rgb(250,250,250)',
@@ -121,10 +129,41 @@
         }
     }
 
-    .user-table {
+     .user-table {
         margin-top: 20px;
         background-color: white;
         height: calc(100vh - 210px);
+
+        .user-table-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            .add-btn {
+                margin-right: 10px;
+            }
+
+            .user-table-title {
+                display: flex;
+                align-items: center;
+
+                .table-border {
+                    border: 2px solid #d1d1d1;
+                    height: 25px;
+                    margin-left: 10px;
+                    margin-right: 5px;
+                }
+
+                .table-title {
+                    height: 50px;
+                    margin-left: 5px;
+                    font-size: 25px;
+                    line-height: 50px;
+                }
+
+            }
+        }
+
 
         .el-pagination {
             margin-top: 20px;

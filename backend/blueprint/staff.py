@@ -57,4 +57,7 @@ def add_staff():
     sql1 = "insert into yuangong (name,y_phone,zhanghao,sex) values  (%s,%s,%s,%s)"
     cursor.execute(sql1,(data['name'],data['y_phone'],new_id,data['sex']))
     db.commit()
+    sql2 = "insert into userRole (user_id,role_id) values  (%s,4)"
+    cursor.execute(sql2,(new_id))
+    db.commit()
     return 'true'
