@@ -1,10 +1,12 @@
 <script setup lang="ts">
     import {useUserStore} from "../../store/user";
     import pinia from '../../plugins/pinia'
-    import {ref, onMounted} from 'vue'
+    import {ref, onMounted,defineEmits,defineExpose} from 'vue'
     import {getStaffListByStoreId,changeStaffStatus} from "../../api/staffApi";
     import {formateTime} from '../../utils/timeUtils'
-
+     import {resetUserPassword} from '../../api/systemApi'
+    import addStaffVue from './add.vue'
+    const emits = defineEmits('get-list')
     const currentStoreId = ref(useUserStore(pinia).userInfo.store_id)
     const currentPage = ref(1)
     const pageSize = ref(10)
@@ -30,6 +32,7 @@
         getList()
     }
     const getList = () => {
+        tableData.value = []
         getStaffListByStoreId({
             id: currentStoreId.value,
             currentPage: currentPage.value,
@@ -48,6 +51,8 @@
                         ruzhiTime: formateTime(val.ruzhi_time),
                         lizhiTime: val.type === 0 ? formateTime(val.lizhi_time) : '-'
                     })
+                    console.log(val.lizhi_time)
+                    console.log(formateTime('Sat, 18 Feb 2023 16:24:03 GMT'))
 
 
                 })
@@ -97,7 +102,7 @@
                flag:0,type: 0
            }).then(res => {
                if(res.status === 200){
-                   tableData.value = []s
+                   tableData.value = []
                     getList()
                     // @ts-ignore
                 ElMessage({
@@ -114,8 +119,47 @@
            })
        }
     }
+    const centerDialogVisible = ref(false)
+    const rowInfo = ref([])
+     const restPassword = (data: any) => {
+        centerDialogVisible.value = true
+        rowInfo.value = data
+        console.log(rowInfo.value)
+
+    }
+    const cancel = () => {
+        centerDialogVisible.value = false
+    }
+    const confirm = () => {
+        centerDialogVisible.value = false
+        resetUserPassword({
+            id: rowInfo.value.userId
+        }).then((res) => {
+            if (res.status === 200) {
+                // @ts-ignore
+                ElMessage({
+                    message: '密码重置成功',
+                    type: 'success',
+                })
+            }
+        }).catch((err) => {
+            // @ts-ignore
+            ElMessage({
+                message: '密码重置失败',
+                type: 'error',
+            })
+        })
+    }
+    const text = ref('sdsds')
+    const add = ref()
+    const addStaff = () => {
+        add.value.open()
+    }
     onMounted(() => {
         getList()
+    })
+    defineExpose({
+
     })
 </script>
 
@@ -144,10 +188,10 @@
                     </div>
                 </div>
                 <div class="add-btn">
-                    <el-button type="danger" @click="addStore">新增员工</el-button>
+                    <el-button type="danger" @click="addStaff">新增员工</el-button>
                 </div>
             </div>
-            <el-table :data="tableData" style="width: 100%" stripe border max-height="650px"
+            <el-table :data="tableData" style="width: 100%" stripe border max-height="600px"
                       :header-cell-style="{
         'background': 'rgb(250,250,250)',
         'color':'black'
@@ -173,7 +217,7 @@
                 </el-table-column>
                 <el-table-column prop="option" label="操作" align="center">
                     <template #default="scope">
-                        <el-button>重置密码
+                        <el-button @click="restPassword(scope.row)">重置密码
                         </el-button>
                     </template>
                 </el-table-column>
@@ -189,6 +233,20 @@
 
             />
         </div>
+        <el-dialog v-model="centerDialogVisible" title="提示" width="30%" center>
+            <span>
+                确定要将{{rowInfo.staffName}}员工的密码重置为123456嘛？
+            </span>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="cancel">取消</el-button>
+                    <el-button type="primary" @click="confirm">
+                        确认
+                    </el-button>
+                </span>
+            </template>
+        </el-dialog>
+        <addStaffVue ref="add" :getstaffList="getList" ></addStaffVue>
     </div>
 
 </template>

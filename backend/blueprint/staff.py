@@ -44,3 +44,17 @@ def change_staff_status():
     cursor.fetchone()
     db.commit()
     return 'true'
+
+
+@staff_blueprint.route('/addStaff',methods=['POST'])
+def add_staff():
+    data = request.get_json(silent=True)
+    sql = "insert into user (username,password,store) values (%s,%s,%s)"
+    cursor.execute(sql,(data['username'],data['password'],data['store']))
+    new_id = cursor.lastrowid
+    print(new_id)
+    db.commit()
+    sql1 = "insert into yuangong (name,y_phone,zhanghao,sex) values  (%s,%s,%s,%s)"
+    cursor.execute(sql1,(data['name'],data['y_phone'],new_id,data['sex']))
+    db.commit()
+    return 'true'

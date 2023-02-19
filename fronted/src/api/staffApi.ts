@@ -6,3 +6,7 @@ export const getStaffListByStoreId = (data:any) => {
 export const changeStaffStatus = (data:any) => {
     return post('/staff/changeStaffStatus',data)
 }
+
+export const addNewStaff = (data:any) => {
+    return post('/staff/addStaff',data)
+}
