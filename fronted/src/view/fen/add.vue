@@ -2,42 +2,38 @@
     import {ref, onMounted, defineProps, reactive} from 'vue'
     import {useUserStore} from "../../store/user";
     import pinia from '../../plugins/pinia'
-    import {addNewStaff} from '../../api/staffApi'
+    import {addStore} from "../../api/store";
 
     const props = defineProps({
-        getstaffList: {
+        getStoreList: {
             type: Function,
             default: () => {
             }
         }
     })
     const currentStoreId = ref(useUserStore(pinia).userInfo.store_id)
-    const dialogs = ref()
     const ruleForm = reactive({
         username: '',
         password: '',
         repassword: '',
-        name: '',
-        sex: '',
-        staffPhone: ''
+        storeName: '',
+        storeResponsibleName: '',
+        storePhone: '',
+        storeAddress: ''
     })
     const show = ref(false)
     //点击详情该行的用户id
     const open = () => {
         show.value = true
     }
-    const changeSex = (data: any) => {
-        ruleForm.sex = data
-
-    }
     const ruleFormRef = ref()
     const validatePhone = (rule: any, value: any, callback: any) => {
         if (value === '') {
             callback(new Error('请填写联系方式'))
         } else {
-            if (!(/^1[0123456789]\d{9}$/.test(ruleForm.staffPhone))) {
+            if (!(/^1[0123456789]\d{9}$/.test(ruleForm.storePhone))) {
                 callback(new Error("联系方式格式有误"))
-            }else {
+            } else {
                 callback()
             }
         }
@@ -64,29 +60,32 @@
     }
     const rules = reactive({
         username: [
-            {required: true, message: '请输入用户名', trigger: 'blur'},
+            {required: true, message: '请输入登录用户名', trigger: 'blur'},
         ],
-        name: [
-            {required: true, message: '请输入员姓名', trigger: 'blur'},
+        storeName: [
+            {required: true, message: '请输入新增门店名称', trigger: 'blur'},
         ],
-        sex: [
-            {required: true, message: '请选择员工性别', trigger: 'blur'},
+        storeResponsibleName: [
+            {required: true, message: '请选择新增门店负责人', trigger: 'blur'},
+        ],
+        storeAddress: [
+            {required: true, message: '请选择新增门店地址', trigger: 'blur'},
         ],
         password: [{required: true, validator: validatePass, trigger: 'blur'}],
         repassword: [{required: true, validator: validatePass2, trigger: 'blur'}],
-        staffPhone: [{required: true, validator: validatePhone, trigger: 'blur'}],
+        storePhone: [{required: true, validator: validatePhone, trigger: 'blur'}],
     })
     const confirm = () => {
         ruleFormRef.value.validate((valid: any) => {
-            if(valid){
-                 addNewStaff({
-                    store: currentStoreId.value,
+            if (valid) {
+                addStore({
                     username: ruleForm.username,
                     password: ruleForm.password,
-                    repassword: ruleForm.repassword,
-                    name: ruleForm.name,
-                    y_phone: ruleForm.staffPhone,
-                    sex: parseInt(ruleForm.sex)
+                    storeName: ruleForm.storeName,
+                    storeAddress: ruleForm.storeAddress,
+                    storeResponsible: ruleForm.storeResponsibleName,
+                    phone: ruleForm.storePhone,
+                    parentId: currentStoreId.value
                 }).then((res) => {
                     if (res.status === 200) {
                         // @ts-ignore
@@ -94,7 +93,7 @@
                             message: '新增成功',
                             type: 'success',
                         })
-                        props.getstaffList()
+                        props.getStoreList()
                         show.value = false
                     } else {
                         // @ts-ignore
@@ -109,24 +108,22 @@
                         message: '网络异常',
                         type: 'error',
                     })
+
                 })
-            }else{
-                console.log('验证出错')
+            } else {
             }
         })
-
-
-    }
+    };
     const cancel = () => {
         show.value = false;
-        ruleForm.sex = '';
-        ruleForm.staffPhone = '';
-        ruleForm.name = '';
-        ruleForm.repassword = '';
+        ruleForm.username = '';
         ruleForm.password = '';
-        ruleForm.username = ''
-    }
-
+        ruleForm.repassword = '';
+        ruleForm.storeName = '';
+        ruleForm.storeResponsibleName = '';
+        ruleForm.storePhone = '';
+        ruleForm.storeAddress = ''
+    };
     defineExpose({
         open,
     })
@@ -137,16 +134,14 @@
 <template>
     <el-dialog
             v-model="show"
-            title="新增员工"
+            title="新增门店"
             width="50%"
             align-center
-            center="true"
             @open="init"
-            ref="dialogs"
     >
         <div class="container">
             <el-form
-                     :model="ruleForm" ref="ruleFormRef" :rules="rules" label-width="120">
+                    :model="ruleForm" ref="ruleFormRef" :rules="rules" label-width="120">
                 <el-form-item label="登录用户名" prop="username">
                     <el-input v-model="ruleForm.username" placeholder="请输入登录用户名"></el-input>
                 </el-form-item>
@@ -158,24 +153,25 @@
                     <el-input type="password" v-model="ruleForm.repassword" show-password="true"
                               placeholder="请确认密码"></el-input>
                 </el-form-item>
-                <el-form-item label="真实姓名" prop="name">
-                    <el-input v-model="ruleForm.name" placeholder="请输入员工真实姓名"></el-input>
+                <el-form-item label="门店名称" prop="storeName">
+                    <el-input v-model="ruleForm.storeName" placeholder="请输入新增门店名称"></el-input>
                 </el-form-item>
-                <el-form-item label="性别" prop="sex">
-                    <el-radio-group v-model="ruleForm.sex" class="ml-4" @change="changeSex">
-                        <el-radio label="1" size="large">男</el-radio>
-                        <el-radio label="2" size="large">女</el-radio>
-                    </el-radio-group>
+                <el-form-item label="门店负责人" prop="storeName">
+                    <el-input v-model="ruleForm.storeResponsibleName" placeholder="请输入新增门店负责人"></el-input>
                 </el-form-item>
-                <el-form-item label="联系方式" prop="staffPhone">
-                    <el-input v-model="ruleForm.staffPhone" placeholder="请输入员工联系方式"></el-input>
+                <el-form-item label="联系方式" prop="storePhone">
+                    <el-input v-model="ruleForm.storePhone" placeholder="请输入负责人联系方式"></el-input>
                 </el-form-item>
+                <el-form-item label="门店地址" prop="storeAddress">
+                    <el-input v-model="ruleForm.storeAddress" placeholder="请输入新增门店地址"></el-input>
+                </el-form-item>
+
                 <el-form-item>
-                <el-button @click="cancel">取消</el-button>
-                <el-button type="primary" @click="confirm">
-                    确认
-                </el-button>
-                    </el-form-item>
+                    <el-button @click="cancel">取消</el-button>
+                    <el-button type="primary" @click="confirm">
+                        确认
+                    </el-button>
+                </el-form-item>
             </el-form>
         </div>
     </el-dialog>

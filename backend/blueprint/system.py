@@ -6,6 +6,7 @@ from jsonChange import change_json
 
 sys_blueprint = Blueprint('system', __name__, url_prefix='/system')
 
+
 # 获取用户列表
 @sys_blueprint.route('/getUserList', methods=['POST'])
 def get_user_list():
@@ -50,6 +51,7 @@ def change_user_activate():
     db.commit()
     return 'true'
 
+
 # 重置用户密码
 @sys_blueprint.route('/resetUserPassword', methods=['POST'])
 def reset_user_password():
@@ -60,13 +62,14 @@ def reset_user_password():
     db.commit()
     return 'true'
 
+
 # 获取角色列表分页
 @sys_blueprint.route('/getRoleList', methods=['POST'])
 def get_role_list():
     data = request.get_json(silent=True)
     print(data['search'])
     if data['search']:
-        sql = " select * from role where role = %s "
+        sql = "select * from( select role_id,role,GROUP_CONCAT(menu_id SEPARATOR ',') as menu_id from (select * from role r  inner JOIN (select * from  role_menu) rm on rm.role_id = r.id) as rrm GROUP BY role_id ) as t1 INNER JOIN(select * from (select role_id,GROUP_CONCAT(menu SEPARATOR ',') as menuName,GROUP_CONCAT(path SEPARATOR ',') as menuPath from(select * from menu m inner join (select menu_id as rm_id,role_id from role_menu) rm on m.menu_id  = rm.rm_id) as ti group by role_id) as t2 ) t3 on t1.role_id = t3.role_id  where role = %s "
         # 执行sql语句
         cursor.execute(sql, (data['search']))
         result = cursor.fetchall()
@@ -79,7 +82,7 @@ def get_role_list():
             'total': len(result)
         })
     else:
-        sql = " select * from role "
+        sql = " select * from( select role_id,role,GROUP_CONCAT(menu_id SEPARATOR ',') as menu_id from (select * from role r  inner JOIN (select * from  role_menu) rm on rm.role_id = r.id) as rrm GROUP BY role_id ) as t1 INNER JOIN(select * from (select role_id,GROUP_CONCAT(menu SEPARATOR ',') as menuName,GROUP_CONCAT(path SEPARATOR ',') as menuPath from(select * from menu m inner join (select menu_id as rm_id,role_id from role_menu) rm on m.menu_id  = rm.rm_id) as ti group by role_id) as t2 ) t3 on t1.role_id = t3.role_id "
         # 执行sql语句
         cursor.execute(sql)
         result = cursor.fetchall()
@@ -92,8 +95,9 @@ def get_role_list():
             'total': len(result)
         })
 
+
 #    获取角色
-@sys_blueprint.route('/role',methods=['GET'])
+@sys_blueprint.route('/role', methods=['GET'])
 def get_role():
     sql = "select * from role"
     cursor.execute(sql)

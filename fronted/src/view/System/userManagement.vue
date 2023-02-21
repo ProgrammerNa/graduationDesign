@@ -193,9 +193,6 @@
                         用户列表
                     </div>
                 </div>
-                <div class="add-btn">
-                    <el-button type="danger" @click="addUser">新增用户</el-button>
-                </div>
             </div>
             <el-table :data="tableData" style="width: 100%" stripe border max-height="650px"
                       :header-cell-style="{
@@ -294,10 +291,6 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-
-            .add-btn {
-                margin-right: 10px;
-            }
 
             .user-table-title {
                 display: flex;

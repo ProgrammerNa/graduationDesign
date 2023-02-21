@@ -3,6 +3,8 @@
     import pinia from '../../plugins/pinia'
     import {ref, onMounted} from 'vue'
     import {getStoreList} from "../../api/store";
+    import {resetUserPassword} from "../../api/systemApi";
+    import addStore from './add.vue'
 
     const currentStoreId = ref(useUserStore(pinia).userInfo.store_id)
     const currentPage = ref(1)
@@ -21,6 +23,7 @@
         getList()
     }
     const getList = () => {
+        tableData.value = []
         getStoreList({
             id: currentStoreId.value,
             currentPage: currentPage.value,
@@ -40,6 +43,39 @@
     const reset = () => {
         searchValue.value = ''
         getList()
+    }
+    const add = ref()
+    const addNewStore = () => {
+        add.value.open()
+    }
+    const centerDialogVisible = ref(false)
+    const rowInfo = ref([])
+    const restPassword = (data: any) => {
+        centerDialogVisible.value = true
+        rowInfo.value = data
+    }
+    const cancel = () => {
+        centerDialogVisible.value = false
+    }
+    const confirm = () => {
+        centerDialogVisible.value = false
+        resetUserPassword({
+            id: rowInfo.value.user_id
+        }).then((res) => {
+            if (res.status === 200) {
+                // @ts-ignore
+                ElMessage({
+                    message: '密码重置成功',
+                    type: 'success',
+                })
+            }
+        }).catch((err) => {
+            // @ts-ignore
+            ElMessage({
+                message: '密码重置失败',
+                type: 'error',
+            })
+        })
     }
     onMounted(() => {
         getList()
@@ -71,7 +107,7 @@
                     </div>
                 </div>
                 <div class="add-btn">
-                    <el-button type="danger" @click="addStore">新增门店</el-button>
+                    <el-button type="danger" @click="addNewStore">新增门店</el-button>
                 </div>
             </div>
             <el-table :data="tableData" style="width: 100%" stripe border max-height="650px"
@@ -81,11 +117,16 @@
       }">
                 <el-table-column prop="store_id" label="门店编号" align="center"></el-table-column>
                 <el-table-column prop="store_name" label="门店名称" align="center"></el-table-column>
+                <el-table-column prop="username" label="登陆账号" align="center"></el-table-column>
                 <el-table-column prop="store_responsible" label="门店负责人" align="center"></el-table-column>
                 <el-table-column prop="phone" label="联系方式" align="center"></el-table-column>
                 <el-table-column prop="store_address" label="门店地址" align="center"></el-table-column>
-                <el-table-column prop="option" label="操作" align="center">
+                <el-table-column prop="option" label="操作" align="center" width="450">
                     <template #default="scope">
+                         <el-button>门店编辑
+                        </el-button>
+                        <el-button @click="restPassword(scope.row)">重置密码
+                        </el-button>
                         <el-button>数据查看
                         </el-button>
                          <el-button>人员详情
@@ -104,6 +145,20 @@
 
             />
         </div>
+         <el-dialog v-model="centerDialogVisible" title="提示" width="30%" center>
+            <span>
+                确定要将{{rowInfo.username}}用户的密码重置为123456嘛？
+            </span>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="cancel">取消</el-button>
+                    <el-button type="primary" @click="confirm">
+                        确认
+                    </el-button>
+                </span>
+            </template>
+        </el-dialog>
+        <addStore ref="add" :getStoreList="getList"></addStore>
     </div>
 
 </template>

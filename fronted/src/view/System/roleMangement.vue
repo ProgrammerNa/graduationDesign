@@ -54,7 +54,7 @@
         <div class="search">
             <div class="title">角色名:</div>
             <div class="search-input">
-                <el-input v-model="searchValue" placeholder="请输入用户名查询">
+                <el-input v-model="searchValue" placeholder="请输入角色名查询">
                 </el-input>
             </div>
             <div class="option-btn">
@@ -80,8 +80,9 @@
         'background': 'rgb(250,250,250)',
         'color':'black'
       }">
-                <el-table-column prop="id" label="ID" align="center"/>
+                <el-table-column prop="role_id" label="ID" align="center"/>
                 <el-table-column prop="role" label="角色名称" align="center"/>
+                <el-table-column prop="menuName" label="菜单权限" align="center"/>
             </el-table>
             <el-pagination
                     background layout="->,total,sizes,prev,pager,next,jumper"

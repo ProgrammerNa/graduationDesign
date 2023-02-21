@@ -6,7 +6,6 @@
     import {formateTime} from '../../utils/timeUtils'
      import {resetUserPassword} from '../../api/systemApi'
     import addStaffVue from './add.vue'
-    const emits = defineEmits('get-list')
     const currentStoreId = ref(useUserStore(pinia).userInfo.store_id)
     const currentPage = ref(1)
     const pageSize = ref(10)
@@ -51,9 +50,6 @@
                         ruzhiTime: formateTime(val.ruzhi_time),
                         lizhiTime: val.type === 0 ? formateTime(val.lizhi_time) : '-'
                     })
-                    console.log(val.lizhi_time)
-                    console.log(formateTime('Sat, 18 Feb 2023 16:24:03 GMT'))
-
 
                 })
                 total.value = res.data.total
@@ -198,7 +194,7 @@
       }">
                 <el-table-column prop="staffId" label="员工编号" align="center"></el-table-column>
                 <el-table-column prop="staffName" label="员工姓名" align="center"></el-table-column>
-                <el-table-column prop="username" label="员工账户名" align="center"></el-table-column>
+                <el-table-column prop="username" label="登录账户" align="center"></el-table-column>
                 <el-table-column prop="staffPhone" label="联系方式" align="center"></el-table-column>
                 <el-table-column prop="status" label="员工状态" align="center">
                     <template #default="scope">

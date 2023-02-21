@@ -1,9 +1,10 @@
 import dayjs from 'dayjs';
 
 // 时间格式处理
-export const formateTime = (time: string, type = 'YYYY-MM-DD') => {
-    if (!time) {
+export const formateTime = (val: string, type = 'YYYY-MM-DD') => {
+    if (!val) {
         return '';
     }
-    return dayjs(`${time}`).format(type);
+    let time = new Date(new Date(val).getTime() + new Date(val).getTimezoneOffset()*60*1000)
+    return dayjs(`${time}`).subtract(8,'hour').format(type);
 };
