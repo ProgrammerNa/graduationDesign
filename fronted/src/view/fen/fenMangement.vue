@@ -5,13 +5,14 @@
     import {getStoreList} from "../../api/store";
     import {resetUserPassword} from "../../api/systemApi";
     import addStore from './add.vue'
-
+    import {useRouter} from 'vue-router'
     const currentStoreId = ref(useUserStore(pinia).userInfo.store_id)
     const currentPage = ref(1)
     const pageSize = ref(10)
     const tableData = ref([])
     const total = ref(0)
     const searchValue = ref('')
+    const route = useRouter()
 
     const handleSizeChange = (val: any) => {
         pageSize.value = val
@@ -46,7 +47,15 @@
     }
     const add = ref()
     const addNewStore = () => {
-        add.value.open()
+        add.value.open({
+            title:'新增门店'
+        })
+    }
+    const editor = (data:any) => {
+        add.value.open({
+            title:'编辑门店',
+            rowData:data
+        })
     }
     const centerDialogVisible = ref(false)
     const rowInfo = ref([])
@@ -76,6 +85,10 @@
                 type: 'error',
             })
         })
+    }
+    const checkFenStaff = (data:any) => {
+        console.log(data)
+        route.push({ path: "/fenStaffDetail", query: { storeId: data.store_id} })
     }
     onMounted(() => {
         getList()
@@ -110,7 +123,7 @@
                     <el-button type="danger" @click="addNewStore">新增门店</el-button>
                 </div>
             </div>
-            <el-table :data="tableData" style="width: 100%" stripe border max-height="650px"
+            <el-table :data="tableData" style="width: 100%" stripe border max-height="600px"
                       :header-cell-style="{
         'background': 'rgb(250,250,250)',
         'color':'black'
@@ -123,13 +136,13 @@
                 <el-table-column prop="store_address" label="门店地址" align="center"></el-table-column>
                 <el-table-column prop="option" label="操作" align="center" width="450">
                     <template #default="scope">
-                         <el-button>门店编辑
+                         <el-button @click="editor(scope.row)">门店编辑
                         </el-button>
                         <el-button @click="restPassword(scope.row)">重置密码
                         </el-button>
                         <el-button>数据查看
                         </el-button>
-                         <el-button>人员详情
+                         <el-button @click="checkFenStaff(scope.row)">人员详情
                         </el-button>
                     </template>
                 </el-table-column>

@@ -1,4 +1,6 @@
 from config import cursor
+
+
 class change_json:
     @staticmethod
     def obj_to_json(obj):
@@ -14,9 +16,9 @@ class change_json:
         return res
 
     @staticmethod
-    def dict_slice_data(data,start,end):
+    def dict_slice_data(data, start, end):
         '''分页切片'''
-        key=data.keys()
+        key = data.keys()
         dict_slice = {}
         for k in list(key)[start:end]:
             dict_slice[k] = data[k]

@@ -1,39 +1,23 @@
 <script setup lang="ts">
-    import {useUserStore} from "../../store/user";
-    import pinia from '../../plugins/pinia'
-    import {ref, onMounted,defineEmits,defineExpose} from 'vue'
-    import {getStaffListByStoreId,changeStaffStatus} from "../../api/staffApi";
-    import {formateTime} from '../../utils/timeUtils'
-     import {resetUserPassword} from '../../api/systemApi'
-    import addStaffVue from './add.vue'
-    const currentStoreId = ref(useUserStore(pinia).userInfo.store_id)
-    const currentPage = ref(1)
+    import {ref,onMounted} from 'vue'
+    import {useRoute,useRouter} from 'vue-router'
+    import {getStaffListByStoreId} from "../../api/staffApi";
+    import {formateTime} from "../../utils/timeUtils";
+
+    const route  = useRoute()
+    const router = useRouter()
+     const currentPage = ref(1)
     const pageSize = ref(10)
     const tableData = ref([])
     const total = ref(0)
     const searchValue = ref('')
-
-    const statusValue = ref()
-    const statusOption = ref([{
-        value: 1,
-        label: '在职'
-    }, {
-        value: 0,
-        label: '离职'
-    }])
-    const handleSizeChange = (val: any) => {
-        pageSize.value = val
-        currentPage.value = val = 1
-        getList()
+    const back  = () => {
+        router.push('/fendianMangement')
     }
-    const handleCurrentChange = (val: any) => {
-        currentPage.value = val
-        getList()
-    }
-    const getList = () => {
+     const getList = () => {
         tableData.value = []
         getStaffListByStoreId({
-            id:currentStoreId.value,
+            id:route.query.storeId,
             currentPage: currentPage.value,
             pageSize: pageSize.value,
             search: searchValue.value
@@ -58,104 +42,9 @@
     }
     const search = () => {
         getList()
-        console.log(searchValue.value)
     }
-    const reset = () => {
-        searchValue.value = ''
+    onMounted(() =>{
         getList()
-    }
-    const changeStatus = (data:any) => {
-       if(data.status === true){
-           changeStaffStatus({
-               id:data.userId,
-               flag:1,type:1
-           }).then(res => {
-               if(res.status === 200){
-                   tableData.value = []
-                    // @ts-ignore
-                ElMessage({
-                    message: '更改成功',
-                    type: 'success',
-                })
-                   getList()
-               }else{
-                    // @ts-ignore
-                ElMessage({
-                    message: '更改失败',
-                    type: 'error',
-                })
-               }
-           }).catch(err => {
-                // @ts-ignore
-                ElMessage({
-                    message: '更改失败',
-                    type: 'error',
-                })
-           })
-       }else{
-           changeStaffStatus({
-               id:data.userId,
-               flag:0,type: 0
-           }).then(res => {
-               if(res.status === 200){
-                   tableData.value = []
-                    getList()
-                    // @ts-ignore
-                ElMessage({
-                    message: '更改成功',
-                    type: 'success',
-                })
-               }else{
-                    // @ts-ignore
-                ElMessage({
-                    message: '更改失败',
-                    type: 'error',
-                })
-               }
-           })
-       }
-    }
-    const centerDialogVisible = ref(false)
-    const rowInfo = ref([])
-     const restPassword = (data: any) => {
-        centerDialogVisible.value = true
-        rowInfo.value = data
-        console.log(rowInfo.value)
-
-    }
-    const cancel = () => {
-        centerDialogVisible.value = false
-    }
-    const confirm = () => {
-        centerDialogVisible.value = false
-        resetUserPassword({
-            id: rowInfo.value.userId
-        }).then((res) => {
-            if (res.status === 200) {
-                // @ts-ignore
-                ElMessage({
-                    message: '密码重置成功',
-                    type: 'success',
-                })
-            }
-        }).catch((err) => {
-            // @ts-ignore
-            ElMessage({
-                message: '密码重置失败',
-                type: 'error',
-            })
-        })
-    }
-    const text = ref('sdsds')
-    const add = ref()
-    const addStaff = () => {
-        add.value.open()
-    }
-    onMounted(() => {
-        getList()
-    })
-    defineExpose({
-
     })
 </script>
 
@@ -184,10 +73,10 @@
                     </div>
                 </div>
                 <div class="add-btn">
-                    <el-button type="danger" @click="addStaff">新增员工</el-button>
+                    <el-button type="danger" @click="back">返回</el-button>
                 </div>
             </div>
-            <el-table :data="tableData" style="width: 100%" stripe border max-height="600px"
+           <el-table :data="tableData" style="width: 100%" stripe border max-height="600px"
                       :header-cell-style="{
         'background': 'rgb(250,250,250)',
         'color':'black'
@@ -202,7 +91,7 @@
                                 v-model="scope.row.status"
                                 active-text="在职"
                                 inactive-text="离职"
-                                @change="changeStatus(scope.row)"
+                                disabled
                         />
                     </template>
 
@@ -210,12 +99,6 @@
                 <el-table-column prop="ruzhiTime" label="入职时间" align="center">
                 </el-table-column>
                 <el-table-column prop="lizhiTime" label="离职时间" align="center">
-                </el-table-column>
-                <el-table-column prop="option" label="操作" align="center">
-                    <template #default="scope">
-                        <el-button @click="restPassword(scope.row)">重置密码
-                        </el-button>
-                    </template>
                 </el-table-column>
             </el-table>
             <el-pagination
@@ -229,20 +112,6 @@
 
             />
         </div>
-        <el-dialog v-model="centerDialogVisible" title="提示" width="30%" center>
-            <span>
-                确定要将{{rowInfo.staffName}}员工的密码重置为123456嘛？
-            </span>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="cancel">取消</el-button>
-                    <el-button type="primary" @click="confirm">
-                        确认
-                    </el-button>
-                </span>
-            </template>
-        </el-dialog>
-        <addStaffVue ref="add" :getstaffList="getList" ></addStaffVue>
     </div>
 
 </template>

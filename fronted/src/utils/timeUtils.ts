@@ -6,5 +6,5 @@ export const formateTime = (val: string, type = 'YYYY-MM-DD') => {
         return '';
     }
     let time = new Date(new Date(val).getTime() + new Date(val).getTimezoneOffset()*60*1000)
-    return dayjs(`${time}`).subtract(8,'hour').format(type);
+    return dayjs(`${time}`).format(type);
 };

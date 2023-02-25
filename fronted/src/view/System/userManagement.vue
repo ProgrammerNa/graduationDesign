@@ -194,7 +194,7 @@
                     </div>
                 </div>
             </div>
-            <el-table :data="tableData" style="width: 100%" stripe border max-height="650px"
+            <el-table :data="tableData" style="width: 100%" stripe border max-height="600px"
                       :header-cell-style="{
         'background': 'rgb(250,250,250)',
         'color':'black'

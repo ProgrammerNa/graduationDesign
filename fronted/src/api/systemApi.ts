@@ -18,3 +18,7 @@ export const getRoleList = (data:any) => {
 export const getRoleName = () => {
     return get('/system/role')
 }
+
+export const changeRoleMenu = (data:any) => {
+    return post('system/changeRoleMenu',data)
+}

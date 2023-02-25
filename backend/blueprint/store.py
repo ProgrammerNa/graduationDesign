@@ -37,7 +37,8 @@ def get_store_list():
 def add_store():
     data = request.get_json(silent=True)
     sql = "insert into store (store_name,store_address,store_responsible,phone,parent_id) values (%s,%s,%s,%s,%s)"
-    cursor.execute(sql, (data['storeName'], data['storeAddress'], data['storeResponsible'], data['phone'],data['parentId']))
+    cursor.execute(sql,
+                   (data['storeName'], data['storeAddress'], data['storeResponsible'], data['phone'], data['parentId']))
     new_store_id = cursor.lastrowid
     print(new_store_id)
     db.commit()
@@ -48,5 +49,14 @@ def add_store():
     db.commit()
     sql2 = "insert into userRole (user_id,role_id) values  (%s,3)"
     cursor.execute(sql2, (new_user_id))
+    db.commit()
+    return 'true'
+
+
+@store_blueprint.route('/updateStoreInfo', methods=['POST'])
+def update_store_info():
+    data = request.get_json(silent=True)
+    sql = "update store set store_name = %s,store_address=%s,store_responsible=%s,phone=%s where store_id = %s"
+    cursor.execute(sql, (data['storeName'], data['storeAddress'], data['storeResponsibleName'], data['storePhone'],data['storeId']))
     db.commit()
     return 'true'

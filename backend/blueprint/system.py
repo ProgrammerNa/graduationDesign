@@ -69,7 +69,7 @@ def get_role_list():
     data = request.get_json(silent=True)
     print(data['search'])
     if data['search']:
-        sql = "select * from( select role_id,role,GROUP_CONCAT(menu_id SEPARATOR ',') as menu_id from (select * from role r  inner JOIN (select * from  role_menu) rm on rm.role_id = r.id) as rrm GROUP BY role_id ) as t1 INNER JOIN(select * from (select role_id,GROUP_CONCAT(menu SEPARATOR ',') as menuName,GROUP_CONCAT(path SEPARATOR ',') as menuPath from(select * from menu m inner join (select menu_id as rm_id,role_id from role_menu) rm on m.menu_id  = rm.rm_id) as ti group by role_id) as t2 ) t3 on t1.role_id = t3.role_id  where role = %s "
+        sql = "select * from( select bool, role_id,role,GROUP_CONCAT(menu_id SEPARATOR ',') as menu_id from (select * from role r  inner JOIN (select * from  role_menu) rm on rm.role_id = r.id) as rrm GROUP BY role_id ) as t1 INNER JOIN(select * from (select role_id,GROUP_CONCAT(menu SEPARATOR ',') as menuName,GROUP_CONCAT(path SEPARATOR ',') as menuPath from(select * from menu m inner join (select menu_id as rm_id,role_id from role_menu) rm on m.menu_id  = rm.rm_id) as ti group by role_id) as t2 ) t3 on t1.role_id = t3.role_id  where role = %s "
         # 执行sql语句
         cursor.execute(sql, (data['search']))
         result = cursor.fetchall()
@@ -82,7 +82,7 @@ def get_role_list():
             'total': len(result)
         })
     else:
-        sql = " select * from( select role_id,role,GROUP_CONCAT(menu_id SEPARATOR ',') as menu_id from (select * from role r  inner JOIN (select * from  role_menu) rm on rm.role_id = r.id) as rrm GROUP BY role_id ) as t1 INNER JOIN(select * from (select role_id,GROUP_CONCAT(menu SEPARATOR ',') as menuName,GROUP_CONCAT(path SEPARATOR ',') as menuPath from(select * from menu m inner join (select menu_id as rm_id,role_id from role_menu) rm on m.menu_id  = rm.rm_id) as ti group by role_id) as t2 ) t3 on t1.role_id = t3.role_id "
+        sql = " select * from( select bool, role_id,role,GROUP_CONCAT(menu_id SEPARATOR ',') as menu_id from (select * from role r  inner JOIN (select * from  role_menu) rm on rm.role_id = r.id) as rrm GROUP BY role_id ) as t1 INNER JOIN(select * from (select role_id,GROUP_CONCAT(menu SEPARATOR ',') as menuName,GROUP_CONCAT(path SEPARATOR ',') as menuPath from(select * from menu m inner join (select menu_id as rm_id,role_id from role_menu) rm on m.menu_id  = rm.rm_id) as ti group by role_id) as t2 ) t3 on t1.role_id = t3.role_id "
         # 执行sql语句
         cursor.execute(sql)
         result = cursor.fetchall()
@@ -104,3 +104,63 @@ def get_role():
     result = cursor.fetchall()
     data = change_json.obj_to_json(result)
     return jsonify(data)
+
+
+@sys_blueprint.route('/changeRoleMenu', methods=['POST'])
+def change_role_menu():
+    data = request.get_json(silent=True)
+    sql1 = """ select role_id,GROUP_CONCAT(menu_id SEPARATOR ',') as menu_id from role_menu where role_id = %s GROUP BY role_id"""
+    cursor.execute(sql1, data['roleId'])
+    print(data['menuId'])
+    sqlResult = cursor.fetchall()
+    data1 = change_json.obj_to_json(sqlResult)
+    menuArray = []
+    for i in data1:
+        menuArray = i['menu_id'].split(',')
+    # 判断是否已经拥有菜单权限，进行相应的添加删除操作
+    if len(data['menuId']) > len(menuArray):
+        # 添加新增的菜单权限
+        for id in data['menuId']:
+            if id not in menuArray:
+                sql2 = " insert into role_menu(menu_id,role_id) values (%s, %s)"
+                cursor.execute(sql2, (id, data['roleId']))
+                db.commit()
+        for id in menuArray:
+            if id not in data['menuId']:
+                sql3 = "delete from role_menu where menu_id = %s and role_id=%s"
+                cursor.execute(sql3, (id,data['roleId']))
+                db.commit()
+    elif len(data['menuId']) < len(menuArray) and len(data['menuId']) > 0:
+        for id in menuArray:
+            if id not in data['menuId']:
+                sql3 = "delete from role_menu where menu_id = %s and role_id=%s"
+                cursor.execute(sql3, (id,data['roleId']))
+                db.commit()
+        for i in data['menuId']:
+            if i not in menuArray:
+                sql2 = " insert into role_menu(menu_id,role_id) values (%s, %s)"
+                cursor.execute(sql2, (i, data['roleId']))
+                db.commit()
+    elif len(data['menuId']) == len(menuArray):
+        if len(data['menuId']) == 1:
+            sql4 = "update role_menu set menu_id = %s where role_id = %s and menu_id = %s"
+            cursor.execute(sql4,(data['menuId'][0],data['roleId'],menuArray[0]))
+            db.commit()
+        else:
+            for i in data['menuId']:
+                if i not in menuArray:
+                    sql2 = " insert into role_menu(menu_id,role_id) values (%s, %s)"
+                    cursor.execute(sql2, (i, data['roleId']))
+                    db.commit()
+            for id in menuArray:
+                if id not in data['menuId']:
+                    sql3 = "delete from role_menu where menu_id = %s and role_id=%s"
+                    cursor.execute(sql3, (id, data['roleId']))
+                    db.commit()
+
+
+
+    else:
+        print('kkkkkk')
+    return 'true'
+

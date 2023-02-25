@@ -6,3 +6,7 @@ export const addStore = (data:any) => {
     console.log(data)
     return post('/store/addStore',data)
 }
+
+export const updateStoreInfo = (data:any) => {
+    return post('/store/updateStoreInfo',data)
+}

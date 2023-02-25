@@ -2,7 +2,8 @@
     import {ref, onMounted, defineProps, reactive} from 'vue'
     import {useUserStore} from "../../store/user";
     import pinia from '../../plugins/pinia'
-    import {addStore} from "../../api/store";
+    import {addStore, updateStoreInfo} from "../../api/store";
+    import {getAreaList} from "../../api/areaApi";
 
     const props = defineProps({
         getStoreList: {
@@ -11,7 +12,13 @@
             }
         }
     })
+    const areaList = () => {
+        getAreaList().then((ress) => {
+            console.log(ress)
+        })
+    }
     const currentStoreId = ref(useUserStore(pinia).userInfo.store_id)
+    const rowData = ref<any>([])
     const ruleForm = reactive({
         username: '',
         password: '',
@@ -19,12 +26,24 @@
         storeName: '',
         storeResponsibleName: '',
         storePhone: '',
-        storeAddress: ''
+        storeAddress: '',
+        storeId: ''
     })
     const show = ref(false)
     //点击详情该行的用户id
-    const open = () => {
+    const title = ref('')
+    const open = (data: any) => {
         show.value = true
+        title.value = data.title
+        console.log(data)
+        if (data.title === '编辑门店') {
+            ruleForm.storeId = data.rowData.store_id
+            ruleForm.username = data.rowData.username;
+            ruleForm.storeName = data.rowData.store_name;
+            ruleForm.storeResponsibleName = data.rowData.store_responsible;
+            ruleForm.storePhone = data.rowData.phone;
+            ruleForm.storeAddress = data.rowData.store_address;
+        }
     }
     const ruleFormRef = ref()
     const validatePhone = (rule: any, value: any, callback: any) => {
@@ -75,41 +94,79 @@
         repassword: [{required: true, validator: validatePass2, trigger: 'blur'}],
         storePhone: [{required: true, validator: validatePhone, trigger: 'blur'}],
     })
+    const addStoreForm = () => {
+        addStore({
+            username: ruleForm.username,
+            password: ruleForm.password,
+            storeName: ruleForm.storeName,
+            storeAddress: ruleForm.storeAddress,
+            storeResponsible: ruleForm.storeResponsibleName,
+            phone: ruleForm.storePhone,
+            parentId: currentStoreId.value
+        }).then((res) => {
+            if (res.status === 200) {
+                // @ts-ignore
+                ElMessage({
+                    message: '新增成功',
+                    type: 'success',
+                })
+                props.getStoreList()
+                show.value = false
+            } else {
+                // @ts-ignore
+                ElMessage({
+                    message: '新增失败',
+                    type: 'error',
+                })
+            }
+        }).catch(err => {
+            // @ts-ignore
+            ElMessage({
+                message: '网络异常',
+                type: 'error',
+            })
+
+        })
+    }
+    const updateStore = () => {
+        updateStoreInfo({
+            storeId: ruleForm.storeId,
+            storeName: ruleForm.storeName,
+            storeAddress: ruleForm.storeAddress,
+            storeResponsibleName: ruleForm.storeResponsibleName,
+            storePhone: ruleForm.storePhone,
+        }).then((res) => {
+            if (res.status === 200) {
+                // @ts-ignore
+                ElMessage({
+                    message: '修改成功',
+                    type: 'success',
+                })
+                props.getStoreList()
+                show.value = false
+            } else {
+                // @ts-ignore
+                ElMessage({
+                    message: '修改失败',
+                    type: 'error',
+                })
+            }
+        }).catch(err => {
+            // @ts-ignore
+            ElMessage({
+                message: '修改失败',
+                type: 'error',
+            })
+        })
+    }
     const confirm = () => {
         ruleFormRef.value.validate((valid: any) => {
             if (valid) {
-                addStore({
-                    username: ruleForm.username,
-                    password: ruleForm.password,
-                    storeName: ruleForm.storeName,
-                    storeAddress: ruleForm.storeAddress,
-                    storeResponsible: ruleForm.storeResponsibleName,
-                    phone: ruleForm.storePhone,
-                    parentId: currentStoreId.value
-                }).then((res) => {
-                    if (res.status === 200) {
-                        // @ts-ignore
-                        ElMessage({
-                            message: '新增成功',
-                            type: 'success',
-                        })
-                        props.getStoreList()
-                        show.value = false
-                    } else {
-                        // @ts-ignore
-                        ElMessage({
-                            message: '新增失败',
-                            type: 'error',
-                        })
-                    }
-                }).catch(err => {
-                    // @ts-ignore
-                    ElMessage({
-                        message: '网络异常',
-                        type: 'error',
-                    })
-
-                })
+                if (title.value === '新增门店') {
+                    addStoreForm()
+                }else{
+                    updateStore()
+                }
             } else {
             }
         })
@@ -124,6 +181,9 @@
         ruleForm.storePhone = '';
         ruleForm.storeAddress = ''
     };
+    const init = () => {
+        areaList()
+    }
     defineExpose({
         open,
     })
@@ -134,22 +194,24 @@
 <template>
     <el-dialog
             v-model="show"
-            title="新增门店"
+            :title="title"
             width="50%"
             align-center
             @open="init"
+            :show-close="false"
     >
         <div class="container">
             <el-form
                     :model="ruleForm" ref="ruleFormRef" :rules="rules" label-width="120">
                 <el-form-item label="登录用户名" prop="username">
-                    <el-input v-model="ruleForm.username" placeholder="请输入登录用户名"></el-input>
+                    <el-input v-model="ruleForm.username" placeholder="请输入登录用户名" v-if="title === '新增门店'"></el-input>
+                    <el-input v-model="ruleForm.username" v-if="title === '编辑门店'" disabled></el-input>
                 </el-form-item>
-                <el-form-item label="密码" prop="password">
+                <el-form-item label="密码" prop="password" v-if="title === '新增门店'">
                     <el-input type="password" v-model="ruleForm.password" show-password="true"
                               placeholder="请输入密码"></el-input>
                 </el-form-item>
-                <el-form-item label="重复密码" prop="repassword">
+                <el-form-item label="重复密码" prop="repassword" v-if="title === '新增门店'">
                     <el-input type="password" v-model="ruleForm.repassword" show-password="true"
                               placeholder="请确认密码"></el-input>
                 </el-form-item>

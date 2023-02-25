@@ -3,6 +3,7 @@
     import {ref, onMounted, defineExpose} from 'vue'
     import {useUserStore} from "../../store/user";
     import pinia from "../../plugins/pinia";
+    import editRole from './add.vue'
 
     const tableData = ref<any[]>([])
     const searchValue = ref<any>('')
@@ -43,6 +44,13 @@
         })
 
     };
+    const changeRoleActivate = (data:any) => {
+        console.log(data)
+    }
+    const edit = ref()
+    const editor = (data:any) => {
+        edit.value.open(data)
+    }
     onMounted(() => {
         getList()
     })
@@ -75,7 +83,7 @@
                     </div>
                 </div>
             </div>
-            <el-table :data="tableData" style="width: 100%" stripe border max-height="650px"
+            <el-table :data="tableData" style="width: 100%" stripe border max-height="600px"
                       :header-cell-style="{
         'background': 'rgb(250,250,250)',
         'color':'black'
@@ -83,6 +91,12 @@
                 <el-table-column prop="role_id" label="ID" align="center"/>
                 <el-table-column prop="role" label="角色名称" align="center"/>
                 <el-table-column prop="menuName" label="菜单权限" align="center"/>
+                <el-table-column prop="option" label="操作" align="center">
+                    <template #default="scope">
+                        <el-button @click="editor(scope.row)">编辑</el-button>
+                    </template>
+                </el-table-column>
+
             </el-table>
             <el-pagination
                     background layout="->,total,sizes,prev,pager,next,jumper"
@@ -95,6 +109,7 @@
 
             />
         </div>
+        <editRole ref="edit" :getList="getList"></editRole>
     </div>
 </template>
 

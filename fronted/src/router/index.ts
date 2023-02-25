@@ -7,6 +7,7 @@ import RoleMangement from '../view/System/roleMangement.vue'
 import FenMangement from '../view/fen/fenMangement.vue'
 import Sell from '../view/medicalSell/sell.vue'
 import Staff from '../view/staff/staff.vue'
+import FenStaff from '../view/fen/fenStaff.vue'
 // 定义路由规则
 const router = createRouter({
     history: createWebHistory('dist'),
@@ -76,6 +77,13 @@ const router = createRouter({
                         title: '分店管理'
                     }
                 },
+                {
+                     path: '/fenStaffDetail',
+                    component: FenStaff,
+                    meta: {
+                        title: '人员详情'
+                    }
+                }
             ]
         },
         {

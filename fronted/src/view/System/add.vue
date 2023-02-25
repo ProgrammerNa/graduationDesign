@@ -1,35 +1,120 @@
 <script setup lang="ts">
-    import {ref, onMounted} from 'vue'
-    import {getRoleName} from "../../api/systemApi";
+    import {ref, reactive} from 'vue'
+    import {changeRoleMenu} from "../../api/systemApi";
+    import {useUserStore} from "../../store/user";
+    import pinia from "../../plugins/pinia";
+    import {getAllMenuList} from "../../api/menu";
+    import {useRouter} from 'vue-router'
 
-    const ruleForm = ref({
-        username: '',
-        password: '',
-        repassword: '',
-        permission: ''
+     const props = defineProps({
+        getList: {
+            type: Function,
+            default: () => {
+            }
+        }
     })
-    const roleValue = ref('')
+    const currentRoleId = ref(useUserStore(pinia).userInfo.role_id)
+    const route = useRouter()
+    const ruleForm = ref({
+        roleId: '',
+        roleName: '',
+        roleValue: [],
+    })
+    const editRowInfo = ref()
+    const roleValue = ref([])
     const roleOptions = ref([])
     const show = ref(false)
     //点击详情该行的用户id
-    const open = () => {
-        show.value = true
+    const open = (data: any) => {
+        show.value = true;
+        editRowInfo.value = data
+        roleValue.value = data.menu_id.split(',')
     }
-    const getRoleList = () => {
-        getRoleName().then((res) => {
+    const getMenu = () => {
+        roleOptions.value = []
+        getAllMenuList().then((res) => {
             if (res.status === 200) {
-                res.data.forEach((item) => {
+                res.data.forEach((val) => {
                     roleOptions.value.push({
-                        value: item.id,
-                        label: item.role,
+                        value: String(val.id),
+                        label: val.menu
                     })
                 })
-                console.log(roleOption.value)
+
             }
         })
     }
+    const chagRolePermission = (data: any) => {
+         ruleForm.value.roleValue = []
+         ruleForm.value.roleValue= data
+    }
+    const cancel = () => {
+        show.value = false
+    }
+    const ruleFormRef = ref()
+    const changeRolePermission = () => {
+        ruleFormRef.value.validate((valid: any) => {
+            if (valid) {
+                changeRoleMenu({
+                    menuId: ruleForm.value.roleValue,
+                    roleId: editRowInfo.value.role_id
+                }).then((res) => {
+                    if (res.status === 200) {
+                        show.value = false
+                        props.getList()
+                        if (editRowInfo.value.role_id === currentRoleId.value) {
+                            setTimeout(() => {
+                                  route.push('/')
+                            },2000)
+
+                        }
+                        // @ts-ignore
+                        ElMessage({
+                            message: '修改角色权限成功',
+                            type: 'success',
+                        })
+                    } else {
+                        // @ts-ignore
+                        ElMessage({
+                            message: '修改角色权限失败',
+                            type: 'error',
+                        })
+                    }
+                }).catch(err => {
+                    // @ts-ignore
+                    ElMessage({
+                        message: '网络异常',
+                        type: 'error',
+                    })
+                })
+            } else {
+                console.log('验证出错')
+            }
+
+        })
+    }
+    const centerDialogVisible = ref(false)
+    const confirmChange = () => {
+        centerDialogVisible.value = false
+        changeRolePermission()
+    }
+    const confirm = () => {
+        if (editRowInfo.value.role_id === currentRoleId.value) {
+            centerDialogVisible.value = true
+        }else{
+            changeRolePermission()
+        }
+    }
+    const cancelChange = () =>{
+        centerDialogVisible.value = false
+    }
+    const rules = reactive({
+        roleValue: [
+            {required: true, message: '请选择要更改的菜单权限', trigger: 'change'},
+        ],
+    })
     const init = () => {
-        getRoleList()
+        getMenu()
     }
     defineExpose({
         open
@@ -41,7 +126,7 @@
 <template>
     <el-dialog
             v-model="show"
-            title="新增用户"
+            title="编辑角色"
             width="50%"
             align-center
             @open="init"
@@ -51,17 +136,15 @@
                      :model="ruleForm"
                      :rules="rules"
                      label-width="120px">
-                <el-form-item label="用户名" prop="username">
-                    <el-input v-model="ruleForm.username" placeholder="请输入用户名"></el-input>
+                <el-form-item label="角色ID" prop="roleId">
+                    <div>{{editRowInfo.role_id}}</div>
                 </el-form-item>
-                <el-form-item label="密码" prop="password">
-                    <el-input v-model="ruleForm.password" placeholder="请输入密码"></el-input>
+                <el-form-item label="角色名称" prop="roleName">
+                    <div>{{editRowInfo.role}}</div>
                 </el-form-item>
-                <el-form-item label="重复密码" prop="repassword">
-                    <el-input v-model="ruleForm.repassword" placeholder="请确认密码"></el-input>
-                </el-form-item>
-                <el-form-item label="用户权限" prop="permission">
-                    <el-select v-model="roleValue" placeholder="请选择用户角色">
+                <el-form-item label="菜单权限" prop="roleValue">
+                    <el-select v-model="roleValue" placeholder="请选择用户角色" collapse-tags multiple
+                               @change="chagRolePermission">
                         <el-option
                                 v-for="item in roleOptions"
                                 :key="item.value"
@@ -70,9 +153,24 @@
                         />
                     </el-select>
                 </el-form-item>
-
+                <el-form-item>
+                    <el-button @click="confirm">确认</el-button>
+                    <el-button @click="cancel">关闭</el-button>
+                </el-form-item>
             </el-form>
-
+            <el-dialog v-model="centerDialogVisible" title="提示" width="30%" center>
+            <span>
+               您修改的角色权限是当前用户，是否确认修改？
+            </span>
+                <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="cancelChange">取消</el-button>
+                    <el-button type="primary" @click="confirmChange">
+                        确认
+                    </el-button>
+                </span>
+                </template>
+            </el-dialog>
         </div>
     </el-dialog>
 </template>

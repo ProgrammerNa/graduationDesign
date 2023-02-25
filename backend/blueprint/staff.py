@@ -10,6 +10,7 @@ staff_blueprint = Blueprint('staff', __name__, url_prefix='/staff')
 @staff_blueprint.route('/getStaffListByStoreId', methods=['POST'])
 def get_staff_list_by_store_id():
     data = request.get_json(silent=True)
+    print(data['id'])
     if data['search']:
         sql = "select * from store st INNER JOIN ( select * from (SELECT * FROM yuangong yg INNER JOIN (select * FROM user) u on u.id = yg.zhanghao) as uy) uyg ON uyg.store = st.store_id where store_id = %s and name = %s"
         cursor.execute(sql, (data['id'], data['search']))
