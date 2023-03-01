@@ -16,13 +16,13 @@
                 router
         >
             <template v-for="(item, index) of roleMenuList" :key="item.menu">
-                <template v-if="item.children">
+                <template v-if="item.flag === 1">
                     <el-sub-menu :index="item.path">
                         <template #title>
                             <span>{{ item.menu }}</span>
                         </template>
                         <template
-                                v-for="(childItem, chileIndex) of item.childrenMenu"
+                                v-for="(childItem, chileIndex) of item.children"
                                 :key="childItem.menu"
                         >
                             <el-menu-item :index="childItem.path">
@@ -33,7 +33,7 @@
                         </template>
                     </el-sub-menu>
                 </template>
-                <template v-if="!item.children">
+                <template v-if="item.flag !== 1">
                     <el-menu-item :index="item.path">
                         <template #title>
                             <span>{{ item.menu }}</span>

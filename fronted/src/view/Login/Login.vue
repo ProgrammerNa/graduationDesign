@@ -6,6 +6,7 @@
     import {useUserStore} from "../../store/user";
     import router from "../../router/index";
     import {getMenuLsit} from "../../api/menu";
+    import {tree} from '../../utils/treeUtilr'
 
     const roleId = ref(0)
     const formData = reactive({
@@ -74,66 +75,7 @@
             roleId: roleId.value
         }).then(res => {
             if (res.status === 200) {
-                const menuPath = ref([])
-                const children = ref([])
-                if (res.data.length > 1) {
-                    res.data.forEach((val, index) => {
-                        if (val.flag === 1) {
-                            //    说明有子菜单
-                            children.value = []
-                            val.menu_path.split(',').forEach((item) => {
-                                children.value.push({
-                                    menu: item.split('/')[0],
-                                    path: '/' + item.split('/')[1]
-                                })
-                            })
-                            menuPath.value.push({
-                                menu: val.menu,
-                                children: true,
-                                path: val.path,
-                                childrenMenu: children.value
-                            })
-
-                        } else {
-                            //无子菜单的情况
-                            menuPath.value.push({
-                                menu: val.menu,
-                                children: false,
-                                path: val.path,
-                            })
-                        }
-                    })
-                } else {
-
-                    res.data.forEach((val, index) => {
-                        if (val.flag === 1) {
-                            //    说明有子菜单
-                            val.menu_path.split(',').forEach((item) => {
-                                children.value.push({
-                                    menu: item.split('/')[0],
-                                    path: '/' + item.split('/')[1]
-                                })
-                            })
-                            menuPath.value.push({
-                                menu: val.menu,
-                                children: true,
-                                path: val.path,
-                                childrenMenu: children.value
-                            })
-
-                        } else {
-                            //无子菜单的情况
-                            menuPath.value.push({
-                                menu: val.menu,
-                                children: false,
-                                path: val.path,
-                            })
-                        }
-                    })
-                }
-                console.log(menuPath.value)
-
-                useSystemStore(pinia).setRoleMenuList(menuPath.value)
+                useSystemStore(pinia).setRoleMenuList(tree(res.data))
             }
         })
     }

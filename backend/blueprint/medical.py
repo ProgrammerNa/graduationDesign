@@ -6,11 +6,11 @@ from jsonChange import change_json
 
 medical_blueprint = Blueprint('medical', __name__, url_prefix='/medical')
 
-@medical_blueprint.route('/getMedicalTree',methods=['POST'])
+
+@medical_blueprint.route('/getMedicalTree', methods=['POST'])
 def get_medical_tree():
-    sql = "select * from medical_type"
+    sql = "select type_id as id,type_name,parent_id from medical_type"
     cursor.execute(sql)
     result = cursor.fetchall()
     data = change_json.obj_to_json(result)
     return jsonify(data)
-

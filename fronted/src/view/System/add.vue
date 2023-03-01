@@ -36,7 +36,7 @@
             if (res.status === 200) {
                 res.data.forEach((val) => {
                     roleOptions.value.push({
-                        value: String(val.id),
+                        value: String(val.menu_id),
                         label: val.menu
                     })
                 })
@@ -160,7 +160,7 @@
             </el-form>
             <el-dialog v-model="centerDialogVisible" title="提示" width="30%" center>
             <span>
-               您修改的角色权限是当前用户，是否确认修改？
+               您修改的角色权限是当前用户，是否确认修改？确认修改后2s后会跳转至登陆页面，需重新登录！
             </span>
                 <template #footer>
                 <span class="dialog-footer">
