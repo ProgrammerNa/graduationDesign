@@ -198,7 +198,8 @@
             width="50%"
             align-center
             @open="init"
-            :show-close="false"
+             :show-close="false"
+            :close-on-click-modal="false"
     >
         <div class="container">
             <el-form

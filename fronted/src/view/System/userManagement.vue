@@ -234,7 +234,8 @@
 
             />
         </div>
-        <el-dialog v-model="centerDialogVisible" title="提示" width="30%" center>
+        <el-dialog v-model="centerDialogVisible" title="提示" width="30%" align-center :show-close="false"
+                   :close-on-click-modal="false">
             <span>
                 确定要将{{rowInfo.username}}用户的密码重置为123456嘛？
             </span>

@@ -1,11 +1,12 @@
 <script setup lang="ts">
     import {useUserStore} from "../../store/user";
     import pinia from '../../plugins/pinia'
-    import {ref, onMounted,defineEmits,defineExpose} from 'vue'
-    import {getStaffListByStoreId,changeStaffStatus} from "../../api/staffApi";
+    import {ref, onMounted, defineEmits, defineExpose} from 'vue'
+    import {getStaffListByStoreId, changeStaffStatus} from "../../api/staffApi";
     import {formateTime} from '../../utils/timeUtils'
-     import {resetUserPassword} from '../../api/systemApi'
+    import {resetUserPassword} from '../../api/systemApi'
     import addStaffVue from './add.vue'
+
     const currentStoreId = ref(useUserStore(pinia).userInfo.store_id)
     const currentPage = ref(1)
     const pageSize = ref(10)
@@ -33,7 +34,7 @@
     const getList = () => {
         tableData.value = []
         getStaffListByStoreId({
-            id:currentStoreId.value,
+            id: currentStoreId.value,
             currentPage: currentPage.value,
             pageSize: pageSize.value,
             search: searchValue.value
@@ -41,12 +42,12 @@
             if (res.status === 200) {
                 res.data.data.forEach((val) => {
                     tableData.value.push({
-                        userId:val.id,
+                        userId: val.id,
                         staffId: val.yuan_id,
                         staffName: val.name,
                         username: val.username,
                         staffPhone: val.y_phone,
-                        status: val.type === 1 ? true :false,
+                        status: val.type === 1 ? true : false,
                         ruzhiTime: formateTime(val.ruzhi_time),
                         lizhiTime: val.type === 0 ? formateTime(val.lizhi_time) : '-'
                     })
@@ -64,60 +65,60 @@
         searchValue.value = ''
         getList()
     }
-    const changeStatus = (data:any) => {
-       if(data.status === true){
-           changeStaffStatus({
-               id:data.userId,
-               flag:1,type:1
-           }).then(res => {
-               if(res.status === 200){
-                   tableData.value = []
+    const changeStatus = (data: any) => {
+        if (data.status === true) {
+            changeStaffStatus({
+                id: data.userId,
+                flag: 1, type: 1
+            }).then(res => {
+                if (res.status === 200) {
+                    tableData.value = []
                     // @ts-ignore
-                ElMessage({
-                    message: '更改成功',
-                    type: 'success',
-                })
-                   getList()
-               }else{
+                    ElMessage({
+                        message: '更改成功',
+                        type: 'success',
+                    })
+                    getList()
+                } else {
                     // @ts-ignore
-                ElMessage({
-                    message: '更改失败',
-                    type: 'error',
-                })
-               }
-           }).catch(err => {
+                    ElMessage({
+                        message: '更改失败',
+                        type: 'error',
+                    })
+                }
+            }).catch(err => {
                 // @ts-ignore
                 ElMessage({
                     message: '更改失败',
                     type: 'error',
                 })
-           })
-       }else{
-           changeStaffStatus({
-               id:data.userId,
-               flag:0,type: 0
-           }).then(res => {
-               if(res.status === 200){
-                   tableData.value = []
+            })
+        } else {
+            changeStaffStatus({
+                id: data.userId,
+                flag: 0, type: 0
+            }).then(res => {
+                if (res.status === 200) {
+                    tableData.value = []
                     getList()
                     // @ts-ignore
-                ElMessage({
-                    message: '更改成功',
-                    type: 'success',
-                })
-               }else{
+                    ElMessage({
+                        message: '更改成功',
+                        type: 'success',
+                    })
+                } else {
                     // @ts-ignore
-                ElMessage({
-                    message: '更改失败',
-                    type: 'error',
-                })
-               }
-           })
-       }
+                    ElMessage({
+                        message: '更改失败',
+                        type: 'error',
+                    })
+                }
+            })
+        }
     }
     const centerDialogVisible = ref(false)
     const rowInfo = ref([])
-     const restPassword = (data: any) => {
+    const restPassword = (data: any) => {
         centerDialogVisible.value = true
         rowInfo.value = data
         console.log(rowInfo.value)
@@ -154,9 +155,7 @@
     onMounted(() => {
         getList()
     })
-    defineExpose({
-
-    })
+    defineExpose({})
 </script>
 
 <template>
@@ -229,7 +228,8 @@
 
             />
         </div>
-        <el-dialog v-model="centerDialogVisible" title="提示" width="30%" center>
+        <el-dialog v-model="centerDialogVisible" title="提示" width="30%" align-center :show-close="false"
+                   :close-on-click-modal="false">
             <span>
                 确定要将{{rowInfo.staffName}}员工的密码重置为123456嘛？
             </span>
@@ -242,7 +242,7 @@
                 </span>
             </template>
         </el-dialog>
-        <addStaffVue ref="add" :getstaffList="getList" ></addStaffVue>
+        <addStaffVue ref="add" :getstaffList="getList"></addStaffVue>
     </div>
 
 </template>

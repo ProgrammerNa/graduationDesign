@@ -37,7 +37,7 @@
         } else {
             if (!(/^1[0123456789]\d{9}$/.test(ruleForm.staffPhone))) {
                 callback(new Error("联系方式格式有误"))
-            }else {
+            } else {
                 callback()
             }
         }
@@ -78,8 +78,8 @@
     })
     const confirm = () => {
         ruleFormRef.value.validate((valid: any) => {
-            if(valid){
-                 addNewStaff({
+            if (valid) {
+                addNewStaff({
                     store: currentStoreId.value,
                     username: ruleForm.username,
                     password: ruleForm.password,
@@ -110,7 +110,7 @@
                         type: 'error',
                     })
                 })
-            }else{
+            } else {
                 console.log('验证出错')
             }
         })
@@ -140,13 +140,14 @@
             title="新增员工"
             width="50%"
             align-center
-            center="true"
             @open="init"
             ref="dialogs"
+            :show-close="false"
+            :close-on-click-modal="false"
     >
         <div class="container">
             <el-form
-                     :model="ruleForm" ref="ruleFormRef" :rules="rules" label-width="120">
+                    :model="ruleForm" ref="ruleFormRef" :rules="rules" label-width="120">
                 <el-form-item label="登录用户名" prop="username">
                     <el-input v-model="ruleForm.username" placeholder="请输入登录用户名"></el-input>
                 </el-form-item>
@@ -171,11 +172,11 @@
                     <el-input v-model="ruleForm.staffPhone" placeholder="请输入员工联系方式"></el-input>
                 </el-form-item>
                 <el-form-item>
-                <el-button @click="cancel">取消</el-button>
-                <el-button type="primary" @click="confirm">
-                    确认
-                </el-button>
-                    </el-form-item>
+                    <el-button @click="cancel">取消</el-button>
+                    <el-button type="primary" @click="confirm">
+                        确认
+                    </el-button>
+                </el-form-item>
             </el-form>
         </div>
     </el-dialog>

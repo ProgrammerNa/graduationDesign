@@ -8,6 +8,9 @@ import FenMangement from '../view/fen/fenMangement.vue'
 import Sell from '../view/medicalSell/sell.vue'
 import Staff from '../view/staff/staff.vue'
 import FenStaff from '../view/fen/fenStaff.vue'
+import MedicalMangement from '../view/save/medicalMangement.vue'
+import MedicalOut from '../view/save/medicalOutSave.vue'
+import InventoryRecords from '../view/save/inventoryRecords.vue'
 // 定义路由规则
 const router = createRouter({
     history: createWebHistory('dist'),
@@ -84,6 +87,36 @@ const router = createRouter({
                         title: '人员详情'
                     }
                 }
+            ]
+        },
+        {
+            path: '/yaoMangement',
+            component: Layout,
+            meta: {
+                title: '药品管理'
+            },
+            children: [
+                {
+                    path: '/yaoMangement',
+                    component: MedicalMangement,
+                    meta: {
+                        title: '出库记录'
+                    }
+                },
+                {
+                    path: '/out',
+                    component: MedicalOut,
+                    meta: {
+                        title: '出库记录'
+                    }
+                },
+                {
+                    path: '/inventoryRecord',
+                    component: InventoryRecords,
+                    meta: {
+                        title: '盘点记录'
+                    }
+                },
             ]
         },
         {

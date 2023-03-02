@@ -6,7 +6,7 @@
     import {getAllMenuList} from "../../api/menu";
     import {useRouter} from 'vue-router'
 
-     const props = defineProps({
+    const props = defineProps({
         getList: {
             type: Function,
             default: () => {
@@ -45,8 +45,8 @@
         })
     }
     const chagRolePermission = (data: any) => {
-         ruleForm.value.roleValue = []
-         ruleForm.value.roleValue= data
+        ruleForm.value.roleValue = []
+        ruleForm.value.roleValue = data
     }
     const cancel = () => {
         show.value = false
@@ -64,8 +64,8 @@
                         props.getList()
                         if (editRowInfo.value.role_id === currentRoleId.value) {
                             setTimeout(() => {
-                                  route.push('/')
-                            },2000)
+                                route.push('/')
+                            }, 2000)
 
                         }
                         // @ts-ignore
@@ -101,11 +101,11 @@
     const confirm = () => {
         if (editRowInfo.value.role_id === currentRoleId.value) {
             centerDialogVisible.value = true
-        }else{
+        } else {
             changeRolePermission()
         }
     }
-    const cancelChange = () =>{
+    const cancelChange = () => {
         centerDialogVisible.value = false
     }
     const rules = reactive({
@@ -130,6 +130,8 @@
             width="50%"
             align-center
             @open="init"
+            :show-close="false"
+            :close-on-click-modal="false"
     >
         <div class="container">
             <el-form ref="ruleFormRef"
@@ -158,7 +160,8 @@
                     <el-button @click="cancel">关闭</el-button>
                 </el-form-item>
             </el-form>
-            <el-dialog v-model="centerDialogVisible" title="提示" width="30%" center>
+            <el-dialog v-model="centerDialogVisible" title="提示" width="30%" align-center :show-close="false"
+                       :close-on-click-modal="false">
             <span>
                您修改的角色权限是当前用户，是否确认修改？确认修改后2s后会跳转至登陆页面，需重新登录！
             </span>
