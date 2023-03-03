@@ -14,7 +14,7 @@
     const total = ref(0)
     const searchValue = ref('')
     const route = useRouter()
-
+    const loading = ref(true)
     const handleSizeChange = (val: any) => {
         pageSize.value = val
         currentPage.value = val = 1
@@ -35,6 +35,9 @@
             if (res.status === 200) {
                 tableData.value = res.data.data
                 total.value = res.data.total
+                setTimeout(() => {
+                     loading.value = false
+                },1000)
             }
         })
     }
@@ -124,7 +127,7 @@
                     <el-button type="danger" @click="addNewStore">新增门店</el-button>
                 </div>
             </div>
-            <el-table :data="tableData" style="width: 100%" stripe border max-height="600px"
+            <el-table v-loading="loading" :data="tableData" style="width: 100%" stripe border max-height="600px"
                       :header-cell-style="{
         'background': 'rgb(250,250,250)',
         'color':'black'

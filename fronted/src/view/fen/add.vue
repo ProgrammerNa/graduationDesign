@@ -3,7 +3,7 @@
     import {useUserStore} from "../../store/user";
     import pinia from '../../plugins/pinia'
     import {addStore, updateStoreInfo} from "../../api/store";
-    import {getAreaList} from "../../api/areaApi";
+    import {getCity} from "../../api/areaApi";
 
     const props = defineProps({
         getStoreList: {
@@ -12,13 +12,7 @@
             }
         }
     })
-    const areaList = () => {
-        getAreaList().then((ress) => {
-            console.log(ress)
-        })
-    }
     const currentStoreId = ref(useUserStore(pinia).userInfo.store_id)
-    const rowData = ref<any>([])
     const ruleForm = reactive({
         username: '',
         password: '',
@@ -26,26 +20,68 @@
         storeName: '',
         storeResponsibleName: '',
         storePhone: '',
-        storeAddress: '',
+        storeAddress: [],
         storeId: ''
     })
+    //loading加载
+    const loading = ref(true)
     const show = ref(false)
     //点击详情该行的用户id
     const title = ref('')
+    const cityOptions = ref([])
+    const selectOptions = ref('')
+    const cityProps = ref({
+        value: 'name',
+        label: 'name',
+        children: 'districts',
+    })
     const open = (data: any) => {
         show.value = true
+        loading.value = true
         title.value = data.title
-        console.log(data)
         if (data.title === '编辑门店') {
             ruleForm.storeId = data.rowData.store_id
             ruleForm.username = data.rowData.username;
             ruleForm.storeName = data.rowData.store_name;
             ruleForm.storeResponsibleName = data.rowData.store_responsible;
             ruleForm.storePhone = data.rowData.phone;
-            ruleForm.storeAddress = data.rowData.store_address;
+            selectOptions.value = data.rowData.store_address.split(',');
         }
     }
+    const getAreaList = () => {
+        getCity().then(res => {
+            if (res.status === 200) {
+                cityOptions.value = getTreeData(
+                    res.data.districts[0].districts
+                )
+                loading.value = false
+            }
+        })
+    }
+    /* 递归处理末尾项district为0的空项 */
+    const getTreeData = (data: any) => {
+        // 循环遍历返回的数据
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].districts.length < 1) {
+                // districts若为空数组，则将districts设为undefined
+                data[i].districts = undefined
+            } else {
+                // districts若不为空数组，则继续 递归调用 本方法
+                getTreeData(data[i].districts)
+            }
+        }
+        return data
+    }
     const ruleFormRef = ref()
+    const validateAddress = (rule: any, value: any, callback: any) => {
+        value = selectOptions.value
+        if (selectOptions.value === '') {
+            callback(new Error('请选择门店地址'))
+        } else {
+            callback()
+
+        }
+    }
     const validatePhone = (rule: any, value: any, callback: any) => {
         if (value === '') {
             callback(new Error('请填写联系方式'))
@@ -88,7 +124,7 @@
             {required: true, message: '请选择新增门店负责人', trigger: 'blur'},
         ],
         storeAddress: [
-            {required: true, message: '请选择新增门店地址', trigger: 'blur'},
+            {required: true, validator: validateAddress, trigger: 'blur'},
         ],
         password: [{required: true, validator: validatePass, trigger: 'blur'}],
         repassword: [{required: true, validator: validatePass2, trigger: 'blur'}],
@@ -99,7 +135,7 @@
             username: ruleForm.username,
             password: ruleForm.password,
             storeName: ruleForm.storeName,
-            storeAddress: ruleForm.storeAddress,
+            storeAddress: selectOptions.value.toString(),
             storeResponsible: ruleForm.storeResponsibleName,
             phone: ruleForm.storePhone,
             parentId: currentStoreId.value
@@ -132,7 +168,7 @@
         updateStoreInfo({
             storeId: ruleForm.storeId,
             storeName: ruleForm.storeName,
-            storeAddress: ruleForm.storeAddress,
+            storeAddress: selectOptions.value.toString(),
             storeResponsibleName: ruleForm.storeResponsibleName,
             storePhone: ruleForm.storePhone,
         }).then((res) => {
@@ -164,7 +200,7 @@
             if (valid) {
                 if (title.value === '新增门店') {
                     addStoreForm()
-                }else{
+                } else {
                     updateStore()
                 }
             } else {
@@ -179,11 +215,15 @@
         ruleForm.storeName = '';
         ruleForm.storeResponsibleName = '';
         ruleForm.storePhone = '';
-        ruleForm.storeAddress = ''
+        ruleForm.storeAddress = []
+        selectOptions.value = ''
     };
-    const init = () => {
-        areaList()
+    const change = (data: any) => {
+        selectOptions.value = data
     }
+    onMounted(() => {
+        getAreaList()
+    })
     defineExpose({
         open,
     })
@@ -194,11 +234,12 @@
 <template>
     <el-dialog
             v-model="show"
+            v-loading="loading"
             :title="title"
             width="50%"
             align-center
             @open="init"
-             :show-close="false"
+            :show-close="false"
             :close-on-click-modal="false"
     >
         <div class="container">
@@ -226,9 +267,18 @@
                     <el-input v-model="ruleForm.storePhone" placeholder="请输入负责人联系方式"></el-input>
                 </el-form-item>
                 <el-form-item label="门店地址" prop="storeAddress">
-                    <el-input v-model="ruleForm.storeAddress" placeholder="请输入新增门店地址"></el-input>
+                    <el-cascader
+                            filterable
+                            placeholder="请选择"
+                            ref="addPoint"
+                            :props="cityProps"
+                            :options="cityOptions"
+                            clearable
+                            v-model="selectOptions"
+                            @change="change"
+                            style="width: 800px"
+                    ></el-cascader>
                 </el-form-item>
-
                 <el-form-item>
                     <el-button @click="cancel">取消</el-button>
                     <el-button type="primary" @click="confirm">

@@ -4,7 +4,17 @@
     import pinia from '../../plugins/pinia'
     import {getMedicalTree} from "../../api/medical";
     import {selectCascader} from "../../utils/treeUtilr";
+    import {addMedicalSave} from "../../api/medical";
+    import {formateTime} from "../../utils/timeUtils";
 
+    const props = defineProps({
+        getMedicalList: {
+            type: Function,
+            default: () => {
+            }
+        }
+    })
+    console.log(props.getMedicalList)
     const currentStoreId = ref(useUserStore(pinia).userInfo.store_id)
     const show = ref(false)
     const ruleForm = reactive({
@@ -42,26 +52,67 @@
     const cancel = () => {
         show.value = false
         ruleForm.medicalName = '';
-        ruleForm.medicalName= '';
-        ruleForm.buyIdBool= '';
-        ruleForm.medicalType= '';
-        ruleForm.selectOption= [];
-        ruleForm.eatMethods= '';
-        ruleForm.eatMedicalCount= '';
-        ruleForm.medicalInPrice='';
-        ruleForm.medicalOutPrice= '';
-        ruleForm.medicalDetail= '';
-        ruleForm.count= 0
+        ruleForm.medicalName = '';
+        ruleForm.buyIdBool = '';
+        ruleForm.medicalType = '';
+        ruleForm.selectOption = [];
+        ruleForm.eatMethods = '';
+        ruleForm.eatMedicalCount = '';
+        ruleForm.medicalInPrice = '';
+        ruleForm.medicalOutPrice = '';
+        ruleForm.medicalDetail = '';
+        ruleForm.count = 0
     }
     const confirm = () => {
         ruleFormRef.value.validate((valid: any) => {
             if (valid) {
+                addMedicalSave({
+                    medicalName: ruleForm.medicalName,
+                    medicalType: parseInt(ruleForm.medicalType),
+                    medicalOutPrice: parseFloat(ruleForm.medicalOutPrice),
+                    storeId: currentStoreId.value,
+                    eatMethods: ruleForm.eatMethods,
+                    eatMedicalCount: ruleForm.eatMedicalCount,
+                    buyIdBool: ruleForm.buyIdBool,
+                    time: formateTime(new Date()),
+                    count: ruleForm.count,
+                    medicalInPrice: parseFloat(ruleForm.medicalOutPrice),
+                    medicalDetail: ruleForm.medicalDetail
+                }).then((res) => {
+                    if (res.status === 200) {
+                        // @ts-ignore
+                        ElMessage({
+                            message: '入库成功',
+                            type: 'success',
+                        })
+                        props.getMedicalList()
+                        cancel()
+                    }else{
+                         // @ts-ignore
+                        ElMessage({
+                            message: '入库失败',
+                            type: 'error',
+                        })
+                    }
+                }).catch(err => {
+                     // @ts-ignore
+                        ElMessage({
+                            message: '网络异常',
+                            type: 'error',
+                        })
+                })
             } else {
                 console.log('验证出错')
             }
         })
 
 
+    }
+    const changeMedicalType = (data: any) => {
+        ruleForm.medicalType = data[data.length - 1]
+    }
+    const changeBuyIdBool = (data: any) => {
+        ruleForm.buyIdBool = data
     }
     const init = () => {
         ruleForm.selectOption = []
@@ -89,11 +140,11 @@
         <div class="container">
             <el-form :model="ruleForm" ref="ruleFormRef" :rules="rules" label-width="120">
                 <el-form-item label="药品名称" prop="medicalName">
-                    <el-input v-model="ruleForm.username" placeholder="请输入药品名称"></el-input>
+                    <el-input v-model="ruleForm.medicalName" placeholder="请输入药品名称"></el-input>
                 </el-form-item>
                 <el-form-item label="药品类型" prop="medicalType">
                     <el-cascader :options="selectCascader( ruleForm.selectOption)"
-                                 :show-all-levels="false"></el-cascader>
+                                 :show-all-levels="false" clearable @change="changeMedicalType"></el-cascader>
                 </el-form-item>
                 <el-form-item label="服用方式" prop="eatMethods">
                     <el-input v-model="ruleForm.eatMethods" placeholder="请填写服用方式"></el-input>
@@ -111,7 +162,7 @@
                     <el-input v-model="ruleForm.count" type="number" min="0"></el-input>
                 </el-form-item>
                 <el-form-item label="顾客购买是否需登记" prop="sex">
-                    <el-radio-group v-model="ruleForm.buyIdBool" class="ml-4" @change="change">
+                    <el-radio-group v-model="ruleForm.buyIdBool" class="ml-4" @change="changeBuyIdBool">
                         <el-radio label="1" size="large">是</el-radio>
                         <el-radio label="0" size="large">否</el-radio>
                     </el-radio-group>
