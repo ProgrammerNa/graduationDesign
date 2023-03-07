@@ -11,3 +11,7 @@ export const addMedicalSave = (data:any) => {
 export const getMedicalInSaveList = (data:any) => {
     return post('/medical/getMedicalInSaveList',data)
 }
+
+export const sellMedicalList = (data:any) => {
+    return post('/medical/sellMedicalList',data)
+}

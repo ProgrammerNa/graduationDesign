@@ -112,7 +112,7 @@
         'background': 'rgb(250,250,250)',
         'color':'black'
       }">
-                <el-table-column prop="medical_id" label="库存编号" align="center"></el-table-column>
+                <el-table-column prop="ru_medical_id" label="库存编号" align="center"></el-table-column>
                 <el-table-column prop="medical_name" label="药品名称" align="center"></el-table-column>
                 <el-table-column prop="type_name" label="药品类型" align="center"></el-table-column>
                 <el-table-column prop="medical_use_methods" label="服用方式" align="center"></el-table-column>
@@ -125,7 +125,12 @@
                 </el-table-column>
                 <el-table-column prop="save_price" label="药品进价(元)" align="center"></el-table-column>
                 <el-table-column prop="medical_price" label="药品售价(元)" align="center"></el-table-column>
-                <el-table-column prop="buy_isId" label="购买是否需要身份登记" align="center"></el-table-column>
+                <el-table-column prop="buy_isId" label="购买是否需要身份登记" align="center">
+                    <template #default="scope">
+                        <div v-if="scope.row.buy_isId === 0">否</div>
+                        <div v-if="scope.row.buy_isId === 1">是</div>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="count" label="入库数量" align="center"></el-table-column>
                 <el-table-column prop="option" label="操作" align="center" width="250">
                     <template #default="scope">

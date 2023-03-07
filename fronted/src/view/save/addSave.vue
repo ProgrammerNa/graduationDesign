@@ -34,6 +34,57 @@
     const open = () => {
         show.value = true
     }
+    const validateMedicalOutPrice = (rule: any, value: any, callback: any) => {
+        if (value <= 0 || isNaN(value)) {
+            callback(new Error('药品售价大于0且必须为数字'))
+        } else {
+            callback()
+
+        }
+    }
+    const validateMedicalInPrice = (rule: any, value: any, callback: any) => {
+         if (value <= 0 || isNaN(value)) {
+             callback(new Error('药品进价大于0且必须为数字'))
+        } else {
+            callback()
+
+        }
+    }
+     const validateCount = (rule: any, value: any, callback: any) => {
+        if (value <= 0) {
+            callback(new Error('入库药品数量需要大于0'))
+        } else {
+            callback()
+
+        }
+    }
+    const rules = reactive({
+        medicalName:[
+           {required: true, message: '请填入药品名称', trigger: 'blur'},
+        ],
+        eatMethods:[
+           {required: true, message: '请填写服用方式', trigger: 'blur'},
+        ],
+        eatMedicalCount:[
+           {required: true, message: '请填写服用剂量', trigger: 'blur'},
+        ],
+        count:[
+           {required: true,  validator: validateCount, trigger: 'blur'},
+        ],
+        medicalInPrice:[
+           {required: true,  validator: validateMedicalInPrice, trigger: 'blur'},
+        ],
+        medicalOutPrice:[
+           {required: true,  validator: validateMedicalOutPrice, trigger: 'blur'},
+        ],
+        buyIdBool:[
+           {required: true,  message: '请选择购买限制', trigger: 'blur'},
+        ],
+        medicalType:[
+           {required: true,  message: '请选择药品类型', trigger: 'blur'},
+        ],
+
+    })
     const getMedicalTreeList = () => {
         getMedicalTree().then((res) => {
             if (res.status === 200) {
@@ -149,19 +200,19 @@
                 <el-form-item label="服用方式" prop="eatMethods">
                     <el-input v-model="ruleForm.eatMethods" placeholder="请填写服用方式"></el-input>
                 </el-form-item>
-                <el-form-item label="服用剂量" prop="eatMedicalCount">
+                <el-form-item label="用法用量" prop="eatMedicalCount">
                     <el-input v-model="ruleForm.eatMedicalCount" placeholder="请填写服用剂量"></el-input>
                 </el-form-item>
-                <el-form-item label="药品进价" prop="medicalInPrice">
+                <el-form-item label="药品进价(元)" prop="medicalInPrice">
                     <el-input v-model="ruleForm.medicalInPrice"></el-input>
                 </el-form-item>
-                <el-form-item label="药品售价" prop="medicalOutPrice">
+                <el-form-item label="药品售价(元)" prop="medicalOutPrice">
                     <el-input v-model="ruleForm.medicalOutPrice"></el-input>
                 </el-form-item>
-                <el-form-item label="入库数量" prop="count">
+                <el-form-item label="入库数量(盒)" prop="count">
                     <el-input v-model="ruleForm.count" type="number" min="0"></el-input>
                 </el-form-item>
-                <el-form-item label="顾客购买是否需登记" prop="sex">
+                <el-form-item label="顾客购买是否需登记" prop="buyIdBool">
                     <el-radio-group v-model="ruleForm.buyIdBool" class="ml-4" @change="changeBuyIdBool">
                         <el-radio label="1" size="large">是</el-radio>
                         <el-radio label="0" size="large">否</el-radio>
