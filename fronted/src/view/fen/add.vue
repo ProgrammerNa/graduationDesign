@@ -209,14 +209,7 @@
     };
     const cancel = () => {
         show.value = false;
-        ruleForm.username = '';
-        ruleForm.password = '';
-        ruleForm.repassword = '';
-        ruleForm.storeName = '';
-        ruleForm.storeResponsibleName = '';
-        ruleForm.storePhone = '';
-        ruleForm.storeAddress = []
-        selectOptions.value = ''
+        ruleFormRef.value.resetFields()
     };
     const change = (data: any) => {
         selectOptions.value = data

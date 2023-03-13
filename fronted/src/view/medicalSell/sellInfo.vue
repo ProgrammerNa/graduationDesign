@@ -13,8 +13,10 @@
     }
     const ruleForm = reactive({
         recordId: '',
-        sellCount: 1
-
+        sellCount: 1,
+        buyUserName:'',
+        buyPhone:'',
+        buyAddress:''
     })
 
     const IdCodeValid = (code) => {
@@ -58,7 +60,6 @@
             82: "澳门",
             91: "国外 "
         };
-        var row = true;
         var msg = '';
         if (!code || !/^\d{6}(18|19|20)?\d{2}(0[1-9]|1[012])(0[1-9]|[12]\d|3[01])\d{3}(\d|[xX])$/.test(code)) {
             msg = "身份证号格式错误";
@@ -87,6 +88,17 @@
             }
         }
         return msg;
+    }
+      const validatePhone = (rule: any, value: any, callback: any) => {
+        if (value === '') {
+            callback(new Error('请填写购买者联系方式'))
+        } else {
+            if (!(/^1[0123456789]\d{9}$/.test(ruleForm.buyPhone))) {
+                callback(new Error("联系方式格式有误"))
+            } else {
+                callback()
+            }
+        }
     }
     const validateSellCount = (rule: any, value: any, callback: any) => {
         if (value < 1) {
@@ -120,7 +132,16 @@
         ],
         recordId: [
             {required: true, validator: validateIdCard, trigger: 'blur'},
-        ]
+        ],
+         buyUserName:[
+           {required: true, message: '请填写购买者姓名', trigger: 'blur'},
+        ],
+          buyPhone:[
+           {required: true, validator: validatePhone, trigger: 'blur'},
+        ],
+         buyAddress:[
+           {required: true, message: '请填写购买者居住地址', trigger: 'blur'},
+        ],
     })
 
     const cancel = () => {
@@ -156,8 +177,17 @@
                 <el-form-item label="售卖数量:" prop="sellCount">
                     <el-input v-model="ruleForm.sellCount" placeholder="请输入药品名称" type="number" min="1"></el-input>
                 </el-form-item>
-                <el-form-item label="身份登记:" prop="recordId" v-if="rowInfo.buy_isId===1">
+                <el-form-item label="购买者姓名:" prop="buyUserName" v-if="rowInfo.buy_isId===1">
+                    <el-input v-model="ruleForm.buyUserName" placeholder="请登记购买者姓名"></el-input>
+                </el-form-item>
+                <el-form-item label="购买者身份登记:" prop="recordId" v-if="rowInfo.buy_isId===1">
                     <el-input v-model="ruleForm.recordId" placeholder="请登记购买者身份证信息"></el-input>
+                </el-form-item>
+                 <el-form-item label="购买者联系方式:" prop="buyPhone" v-if="rowInfo.buy_isId===1">
+                    <el-input v-model="ruleForm.buyPhone" placeholder="请登记购买者联系方式"></el-input>
+                </el-form-item>
+                <el-form-item label="购买者居住地址:" prop="buyAddress" v-if="rowInfo.buy_isId===1">
+                    <el-input v-model="ruleForm.buyAddress" placeholder="请登记购买者居住地址"></el-input>
                 </el-form-item>
                 <el-form-item>
                     <el-button @click="cancel">取消</el-button>

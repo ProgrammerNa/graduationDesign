@@ -119,12 +119,7 @@
     }
     const cancel = () => {
         show.value = false;
-        ruleForm.sex = '';
-        ruleForm.staffPhone = '';
-        ruleForm.name = '';
-        ruleForm.repassword = '';
-        ruleForm.password = '';
-        ruleForm.username = ''
+        ruleFormRef.value.resetFields()
     }
 
     defineExpose({
