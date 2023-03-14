@@ -1,151 +1,84 @@
 <script setup lang="ts">
-    import {ref, onMounted, defineProps, reactive} from 'vue'
+    import {ref, onMounted, defineProps, reactive, computed} from 'vue'
     import {useUserStore} from "../../store/user";
     import pinia from '../../plugins/pinia'
+    import {getMedicalInfoByDrugBarcode} from "../../api/medical";
 
     const currentStoreId = ref(useUserStore(pinia).userInfo.store_id)
     const show = ref(false)
-    //售出药品信息
-    const rowInfo = ref(null)
-    const open = (data: any) => {
+    const open = () => {
         show.value = true
-        rowInfo.value = data
     }
-    const ruleForm = reactive({
+    const ruleForm = ref({
+        searchValue: ''
+    })
+    const ruleSellForm = ref({
+        sellCount: null,
+        buyUserName: '',
         recordId: '',
-        sellCount: 1,
-        buyUserName:'',
-        buyPhone:'',
-        buyAddress:''
+        buyPhone: '',
+        buyAddress: ''
     })
-
-    const IdCodeValid = (code) => {
-        //身份证号合法性验证
-        //支持15位和18位身份证号
-        //支持地址编码、出生日期、校验位验证
-        var city = {
-            11: "北京",
-            12: "天津",
-            13: "河北",
-            14: "山西",
-            15: "内蒙古",
-            21: "辽宁",
-            22: "吉林",
-            23: "黑龙江 ",
-            31: "上海",
-            32: "江苏",
-            33: "浙江",
-            34: "安徽",
-            35: "福建",
-            36: "江西",
-            37: "山东",
-            41: "河南",
-            42: "湖北 ",
-            43: "湖南",
-            44: "广东",
-            45: "广西",
-            46: "海南",
-            50: "重庆",
-            51: "四川",
-            52: "贵州",
-            53: "云南",
-            54: "西藏 ",
-            61: "陕西",
-            62: "甘肃",
-            63: "青海",
-            64: "宁夏",
-            65: "新疆",
-            71: "台湾",
-            81: "香港",
-            82: "澳门",
-            91: "国外 "
-        };
-        var msg = '';
-        if (!code || !/^\d{6}(18|19|20)?\d{2}(0[1-9]|1[012])(0[1-9]|[12]\d|3[01])\d{3}(\d|[xX])$/.test(code)) {
-            msg = "身份证号格式错误";
-        } else if (!city[code.substr(0, 2)]) {
-            msg = "身份证号地址编码错误";
-        } else {
-            //18位身份证需要验证最后一位校验位
-            if (code.length == 18) {
-                code = code.split('');
-                //∑(ai×Wi)(mod 11)
-                //加权因子
-                var factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
-                //校验位
-                var parity = [1, 0, 'X', 9, 8, 7, 6, 5, 4, 3, 2];
-                var sum = 0;
-                var ai = 0;
-                var wi = 0;
-                for (var i = 0; i < 17; i++) {
-                    ai = code[i];
-                    wi = factor[i];
-                    sum += ai * wi;
-                }
-                if (parity[sum % 11] != code[17].toUpperCase()) {
-                        msg = "身份证号校验位错误";
-                }
+    // 确认售出弹窗
+    const dialogVisible = ref(false)
+    const sellTableData = ref([])
+    const sellMedicalData = ref(null)
+    const searchTableData = ref([])
+    const getSearchList = () => {
+        getMedicalInfoByDrugBarcode({
+            storeId: currentStoreId.value,
+            search: ruleForm.value.searchValue,
+        }).then((res) => {
+            if (res.status === 200) {
+                searchTableData.value = res.data
+                console.log(res)
             }
-        }
-        return msg;
+        })
     }
-      const validatePhone = (rule: any, value: any, callback: any) => {
-        if (value === '') {
-            callback(new Error('请填写购买者联系方式'))
-        } else {
-            if (!(/^1[0123456789]\d{9}$/.test(ruleForm.buyPhone))) {
-                callback(new Error("联系方式格式有误"))
-            } else {
-                callback()
-            }
-        }
+    const sellSearch = () => {
+        getSearchList()
     }
-    const validateSellCount = (rule: any, value: any, callback: any) => {
-        if (value < 1) {
-            callback(new Error('售卖数量最低为1'))
-        } else if (value > rowInfo.value.save_medical_count) {
-            callback(new Error('售出数量不得超过库存数量'))
-        } else {
-            callback()
-        }
-    }
-    const validateIdCard = (rule: any, value: any, callback: any) => {
-        if (value === '') {
-            callback(new Error('身份证信息不能为空'))
-        } else {
-            if (value !== '') {
-                let error = IdCodeValid(value)
-                if (error === '') {
-                    callback()
-                } else {
-                    callback(new Error(error))
-                }
-            } else {
-                callback()
-            }
-
-        }
-    }
-    const rules = reactive({
-        sellCount: [
-            {required: true, validator: validateSellCount, trigger: 'blur'},
-        ],
-        recordId: [
-            {required: true, validator: validateIdCard, trigger: 'blur'},
-        ],
-         buyUserName:[
-           {required: true, message: '请填写购买者姓名', trigger: 'blur'},
-        ],
-          buyPhone:[
-           {required: true, validator: validatePhone, trigger: 'blur'},
-        ],
-         buyAddress:[
-           {required: true, message: '请填写购买者居住地址', trigger: 'blur'},
-        ],
-    })
-
     const cancel = () => {
         show.value = false
+    }
+    const confirmSell = (data: any) => {
+        sellMedicalData.value = data
+        dialogVisible.value = true
+    }
+    const totalMoney = computed (() => {
+        let total =0 ;
+        sellTableData.value.forEach((val) => {
+            total = total+val.reveive_money
+        })
+        return total
+    });
+    const confirmMedical = () => {
+        dialogVisible.value = false
+        sellTableData.value.push({
+            sellCount:ruleSellForm.value.sellCount,
+            buyUserName:ruleSellForm.value.buyUserName,
+            buyPhone:ruleSellForm.value.buyPhone,
+            buyAddress:ruleSellForm.value.buyAddress,
+            medical_name:sellMedicalData.value.medical_name,
+            medical_price:sellMedicalData.value.medical_price,
+            reveive_money:sellMedicalData.value.medical_price*ruleSellForm.value.sellCount,
+            recordId:ruleSellForm.value.recordId
+        })
+        console.log(sellTableData.value)
+    }
+    const remove = (data:any) => {
+        sellTableData.value.splice(data,1)
+    }
+    const settleAccounts = () => {
+        if(sellTableData.value.length<=0){
+             // @ts-ignore
+                ElMessage({
+                    message: '没有可结算的数据',
+                    type: 'error',
+                })
+        } else{
+
+        }
     }
 
     defineExpose({
@@ -158,47 +91,153 @@
 <template>
     <el-dialog
             v-model="show"
-            title="药品销售信息"
-            width="50%"
-            align-center
+            title="药品销售"
+            width="60%"
             @open="init"
             ref="dialogs"
-            :show-close="false"
             :close-on-click-modal="false"
     >
         <div class="container">
-            <el-form :model="ruleForm" ref="ruleFormRef" :rules="rules" label-width="120">
-                <el-form-item label="药品名称:">
-                    <span>{{rowInfo.medical_name}}</span>
-                </el-form-item>
-                <el-form-item label="药品售价:">
-                    <span>￥{{rowInfo.medical_price}}</span>
-                </el-form-item>
-                <el-form-item label="售卖数量:" prop="sellCount">
-                    <el-input v-model="ruleForm.sellCount" placeholder="请输入药品名称" type="number" min="1"></el-input>
-                </el-form-item>
-                <el-form-item label="购买者姓名:" prop="buyUserName" v-if="rowInfo.buy_isId===1">
-                    <el-input v-model="ruleForm.buyUserName" placeholder="请登记购买者姓名"></el-input>
-                </el-form-item>
-                <el-form-item label="购买者身份登记:" prop="recordId" v-if="rowInfo.buy_isId===1">
-                    <el-input v-model="ruleForm.recordId" placeholder="请登记购买者身份证信息"></el-input>
-                </el-form-item>
-                 <el-form-item label="购买者联系方式:" prop="buyPhone" v-if="rowInfo.buy_isId===1">
-                    <el-input v-model="ruleForm.buyPhone" placeholder="请登记购买者联系方式"></el-input>
-                </el-form-item>
-                <el-form-item label="购买者居住地址:" prop="buyAddress" v-if="rowInfo.buy_isId===1">
-                    <el-input v-model="ruleForm.buyAddress" placeholder="请登记购买者居住地址"></el-input>
-                </el-form-item>
-                <el-form-item>
-                    <el-button @click="cancel">取消</el-button>
-                    <el-button @click="confirm" type="primary">售出</el-button>
-                </el-form-item>
+
+            <el-form ref="ruleFormRef"
+                     :model="ruleForm"
+                     :rules="rules"
+            >
+                <div style="display: flex">
+                    <el-form-item label="批号/药品名称">
+                        <el-input placeholder="请输入药品批号进行查询" v-model="ruleForm.searchValue"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button @click="sellSearch">查询</el-button>
+                    </el-form-item>
+                </div>
             </el-form>
+            <div class="search-table">
+                <div class="user-table-head">
+                <div class="user-table-title">
+                    <div class="table-border"></div>
+                    <div class="table-title">
+                        查询结果列表
+                    </div>
+                </div>
+            </div>
+                <el-table :data="searchTableData" stripe style="width: 100%">
+                    <el-table-column prop="drug_barcode" label="药品批号"/>
+                    <el-table-column prop="medical_name" label="药品名称"/>
+                    <el-table-column prop="medical_standards" label="药品规格"/>
+                    <el-table-column prop="count" label="药品数量"/>
+                    <el-table-column prop="medical_price" label="药品售价"/>
+                    <el-table-column prop="record" label="购买是否需要登记">
+                        <template #default="scope">
+                            <div v-if="scope.row.record">是</div>
+                            <div v-else>否</div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="option" label="操作">
+                        <template #default="scope">
+                            <el-button type="danger" @click="confirmSell(scope.row)">确认售出</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <el-dialog
+                        v-model="dialogVisible"
+                        title="确认售出"
+                        width="40%"
+                >
+                    <div>
+                        <el-form ref="ruleFormRef"
+                                 :model="ruleSellForm"
+                                 :rules="ruleSell"
+                        >
+                            <el-form-item label="售出数量">
+                                <el-input placeholder="请输入药品售出数量" v-model="ruleSellForm.sellCount" type="number" min="1"></el-input>
+                            </el-form-item>
+                            <div v-if="sellMedicalData.record === 1">
+                                <el-form-item label="购买者姓名:" prop="buyUserName">
+                                    <el-input v-model="ruleSellForm.buyUserName" placeholder="请登记购买者姓名"></el-input>
+                                </el-form-item>
+                                <el-form-item label="购买者身份登记:" prop="recordId">
+                                    <el-input v-model="ruleSellForm.recordId" placeholder="请登记购买者身份证信息"></el-input>
+                                </el-form-item>
+                                <el-form-item label="购买者联系方式:" prop="buyPhone">
+                                    <el-input v-model="ruleSellForm.buyPhone" placeholder="请登记购买者联系方式"></el-input>
+                                </el-form-item>
+                                <el-form-item label="购买者居住地址:" prop="buyAddress">
+                                    <el-input v-model="ruleSellForm.buyAddress" placeholder="请登记购买者居住地址"></el-input>
+                                </el-form-item>
+                            </div>
+                            <el-form-item>
+                               <el-button @click="confirmMedical">确认</el-button>
+                                 <el-button @click="cancelMedical">取消</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </el-dialog>
+            </div>
+            <div class="search-table">
+                <div class="user-table-head">
+                <div class="user-table-title">
+                    <div class="table-border"></div>
+                    <div class="table-title">
+                        待结算列表
+                    </div>
+                </div>
+            </div>
+                <el-table :data="sellTableData" stripe style="width: 100%" :max-height="400">
+                    <el-table-column prop="medical_name" label="药品名称" />
+                    <el-table-column prop="medical_price" label="药品单价"/>
+                    <el-table-column prop="sellCount" label="售出总数"/>
+                    <el-table-column prop="reveive_money" label="金额"/>
+                    <el-table-column prop="buyUserName" label="购买者姓名"/>
+                    <el-table-column prop="buyPhone" label="购买者联系方式"/>
+                    <el-table-column prop="recordId" label="购买者身份证号码"/>
+                    <el-table-column prop="buyAddress" label="购买者居住地址"/>
+                     <el-table-column prop="option" label="操作">
+                          <template #default="scope">
+                            <el-button type="primary" @click="remove(scope.$index)">删除</el-button>
+                        </template>
+                     </el-table-column>
+
+                </el-table>
+            </div>
+            <div style="display: flex; justify-content: flex-end;margin-top: 10px">
+                <el-button type="danger" @click="settleAccounts">结算({{totalMoney}})</el-button>
+            </div>
         </div>
+
     </el-dialog>
+
 </template>
 
 
-<style scoped>
+<style lang="scss" scoped>
+      .user-table-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-left: 5px;
+
+
+        .user-table-title {
+            display: flex;
+            align-items: center;
+
+            .table-border {
+                border: 2px solid #d1d1d1;
+                height: 15px;
+                margin-left: 10px;
+                margin-right: 5px;
+            }
+
+            .table-title {
+                height: 50px;
+                margin-left: 5px;
+                font-size: 15px;
+                line-height: 50px;
+            }
+
+        }
+
+    }
 
 </style>

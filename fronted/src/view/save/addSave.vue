@@ -16,19 +16,20 @@
     })
     const currentStoreId = ref(useUserStore(pinia).userInfo.store_id)
     const currentRoleId = ref(useUserStore(pinia).userInfo.role_id)
+    const selectOption = ref([])
     const show = ref(false)
     const ruleForm = ref({
         medicalName: '',
         drugBarcode: '',
         medicalType: '',
-        selectOption: [],
         medicalInPrice: '',
         medicalOutPrice: '',
         count: 0,
         saveMedicalNum: '',
         time: '',
         medicalStandards: '',
-        medicalSupply: ''
+        medicalSupply: '',
+        medicalTypeName: ''
 
     })
     //点击详情该行的用户id
@@ -36,7 +37,7 @@
         show.value = true
     }
     const ruleFormRef = ref()
-    const cancel =() => {
+    const cancel = () => {
         show.value = false
         ruleFormRef.value.resetFields()
     }
@@ -118,21 +119,54 @@
         getMedicalTree().then((res) => {
             if (res.status === 200) {
                 res.data.forEach((val) => {
-                    ruleForm.value.selectOption.push({
+                    selectOption.value.push({
                         value: val.id,
                         label: val.type_name,
                         parent_id: val.parent_id
                     })
                 })
-                console.log(ruleForm.value.selectOption)
             }
         })
     }
     const changeMedicalType = (data: any) => {
         ruleForm.value.medicalType = data[data.length - 1]
+        selectOption.value.forEach((val) => {
+            if (val.value === ruleForm.value.medicalType) {
+                ruleForm.value.medicalTypeName = val.label
+            }
+        })
+    }
+    const save = () => {
+        addMedicalSave({
+            data: tableData.value,
+            saveTime: formateTime(new Date()),
+            storeId: currentStoreId.value
+        }).then((res) => {
+            if (res.status === 200) {
+                // @ts-ignore
+                ElMessage({
+                    message: '入库成功',
+                    type: 'success',
+                })
+                props.getMedicalList()
+                cancel()
+            } else {
+                // @ts-ignore
+                ElMessage({
+                    message: '入库失败',
+                    type: 'error',
+                })
+            }
+        }).catch(err => {
+            // @ts-ignore
+            ElMessage({
+                message: '网络异常',
+                type: 'error',
+            })
+        })
     }
     const init = () => {
-        ruleForm.value.selectOption = []
+        selectOption.value = []
         getMedicalTreeList()
         tableData.value = []
     }
@@ -166,11 +200,12 @@
                         <el-form-item label="药品名称:" prop="medicalName">
                             <el-input placeholder="请填写药品名称" v-model="ruleForm.medicalName"></el-input>
                         </el-form-item>
-                        <el-form-item label="药品编号:" prop="drugBarcode">
-                            <el-input placeholder="请填写药品编号" v-model="ruleForm.drugBarcode"></el-input>
+                        <el-form-item label="药品批号:" prop="drugBarcode">
+                            <el-input placeholder="请填写药品批号" v-model="ruleForm.drugBarcode"></el-input>
                         </el-form-item>
                         <el-form-item label="药品类型:" prop="medicalType">
-                            <el-cascader :options="selectCascader( ruleForm.selectOption)"
+                            <el-cascader v-model="ruleForm.medicalType"
+                                         :options="selectCascader(selectOption)"
                                          :show-all-levels="false" clearable @change="changeMedicalType"
                                          style="margin-left: 5px;width:190px"></el-cascader>
                         </el-form-item>
@@ -200,6 +235,7 @@
                                     range-separator="至"
                                     start-placeholder="生产时间"
                                     end-placeholder="过期时间"
+                                    value-format="YYYY-MM-DD"
                                     style="width: 580px;margin-left: 5px"
                             />
                         </el-form-item>
@@ -218,7 +254,11 @@
                 <el-table-column prop="saveMedicalNum" label="库存单号"/>
                 <el-table-column prop="drugBarcode" label="药品编号"/>
                 <el-table-column prop="medicalName" label="药品名称"/>
-                <el-table-column prop="medicalType" label="药品类型"/>
+                <el-table-column prop="medicalType" label="药品类型">
+                    <template #default="scope">
+                        <div>{{scope.row.medicalTypeName}}</div>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="medicalStandards" label="药品规格"/>
                 <el-table-column prop="medicalInPrice" label="药品进价(元)"/>
                 <el-table-column prop="medicalOutPrice" label="药品售价(元)"/>
@@ -226,8 +266,7 @@
                 <el-table-column prop="medicalSupply" label="供应商家"/>
                 <el-table-column prop="time" label="有效日期" width="200">
                     <template #default="scope">
-                        <div>{{formateTime(scope.row.time.join('-').split('-')[0])}}至
-                            {{formateTime(scope.row.time.join('-').split('-')[1])}}
+                        <div>{{scope.row.time[0]}}至{{scope.row.time[1]}}
                         </div>
                     </template>
                 </el-table-column>
@@ -239,7 +278,7 @@
             </el-table>
         </div>
         <div class="option-btn">
-             <el-button @click="cancel">取消</el-button>
+            <el-button @click="cancel">取消</el-button>
             <el-button @click="save" type="primary">入库</el-button>
         </div>
     </el-dialog>
@@ -269,12 +308,14 @@
             }
         }
     }
-    .option-btn{
+
+    .option-btn {
         display: flex;
         align-items: center;
         justify-content: space-around;
         margin-top: 10px;
-        .el-button{
+
+        .el-button {
             margin-left: 15px;
         }
     }

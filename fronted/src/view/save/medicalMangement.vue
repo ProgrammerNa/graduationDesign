@@ -112,26 +112,30 @@
         'background': 'rgb(250,250,250)',
         'color':'black'
       }">
-                <el-table-column prop="ru_medical_id" label="库存编号" align="center"></el-table-column>
+                <el-table-column prop="save_medical_num" label="库存单号" align="center"></el-table-column>
                 <el-table-column prop="medical_name" label="药品名称" align="center"></el-table-column>
+                <el-table-column prop="drug_barcode" label="药品批号" align="center"></el-table-column>
                 <el-table-column prop="type_name" label="药品类型" align="center"></el-table-column>
-                <el-table-column prop="medical_use_methods" label="服用方式" align="center"></el-table-column>
-                <el-table-column prop="medical_use_num" label="服用剂量" align="center"></el-table-column>
-                <el-table-column prop="details" label="药品备注" align="center"></el-table-column>
-                <el-table-column prop="save_time" label="入库时间" align="center">
+                <el-table-column prop="medical_standards" label="药品规格" align="center"></el-table-column>
+                <el-table-column prop="save_time" label="入库时间" align="center" width="110">
                     <template #default="scope">
                         <div>{{formateTime(scope.row.save_time)}}</div>
                     </template>
                 </el-table-column>
                 <el-table-column prop="save_price" label="药品进价(元)" align="center"></el-table-column>
                 <el-table-column prop="medical_price" label="药品售价(元)" align="center"></el-table-column>
-                <el-table-column prop="buy_isId" label="购买是否需要身份登记" align="center">
-                    <template #default="scope">
-                        <div v-if="scope.row.buy_isId === 0">否</div>
-                        <div v-if="scope.row.buy_isId === 1">是</div>
+                <el-table-column prop="count" label="入库数量" align="center"></el-table-column>
+                <el-table-column prop="medical_supply" label="供应商家" align="center"></el-table-column>
+                 <el-table-column prop="producat_time" label="生产时间" align="center" width="110">
+                      <template #default="scope">
+                       <div>{{formateTime(scope.row.producat_time)}}</div>
+                    </template>
+                 </el-table-column>
+                <el-table-column prop="medical_out_time" label="过期时间" align="center" width="110">
+                      <template #default="scope">
+                       <div>{{formateTime(scope.row.medical_out_time)}}</div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="count" label="入库数量" align="center"></el-table-column>
                 <el-table-column prop="option" label="操作" align="center" width="250">
                     <template #default="scope">
                         <el-button>药品出库</el-button>

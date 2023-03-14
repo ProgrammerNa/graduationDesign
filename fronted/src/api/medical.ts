@@ -15,3 +15,7 @@ export const getMedicalInSaveList = (data:any) => {
 export const sellMedicalList = (data:any) => {
     return post('/medical/sellMedicalList',data)
 }
+
+export const getMedicalInfoByDrugBarcode = (data:any) => {
+    return post('/medical/getMedicalInfoByDrugBarcode',data)
+}
